@@ -1,0 +1,33 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    # Racine du site = app Flutter (index.html)
+    DirectoryIndex index.html index.php
+
+    RewriteEngine On
+    RewriteBase /
+
+    # Handle Authorization Header (requis pour l'API Laravel)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # --- Laravel : /api, /sanctum, /broadcasting → index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/api [OR]
+    RewriteCond %{REQUEST_URI} ^/sanctum [OR]
+    RewriteCond %{REQUEST_URI} ^/broadcasting
+    RewriteRule ^ index.php [L]
+
+    # --- Flutter SPA : tout le reste (fichiers réels déjà servis ci-dessus) → index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.html [L]
+</IfModule>

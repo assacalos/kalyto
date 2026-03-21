@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="EasyConnect - Application de gestion d'entreprise">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="EasyConnect">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>EasyConnect - Gestion d'Entreprise</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    /* Écran de chargement */
+    #loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 30px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #ffffff;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    
+    .loading-text {
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 18px;
+      margin-top: 20px;
+      animation: fadeInOut 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+    
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Écran de chargement -->
+  <div id="loading">
+    <div class="logo">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" fill="white" opacity="0.9"/>
+        <text x="50" y="65" font-family="Arial" font-size="40" font-weight="bold" 
+              fill="#667eea" text-anchor="middle">EC</text>
+      </svg>
+    </div>
+    <div class="spinner"></div>
+    <div class="loading-text">Chargement d'EasyConnect...</div>
+  </div>
+
+  <!-- Firebase Configuration - FCM Web : voir FCM_WEB_SETUP.md -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+
+  <script>
+    // Même config que Firebase Console → Paramètres du projet → App Web. Remplacer appId par votre Web App ID.
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGNKXbt8dIALOA-DSGvCqwJBHPjfmGMVk",
+      authDomain: "easyconnect-aleb.firebaseapp.com",
+      projectId: "easyconnect-aleb",
+      storageBucket: "easyconnect-aleb.firebasestorage.app",
+      messagingSenderId: "17317714210",
+      appId: "1:17317714210:web:YOUR_WEB_APP_ID"
+    };
+
+    // Initialiser Firebase
+    try {
+      firebase.initializeApp(firebaseConfig);
+      console.log('✅ Firebase initialisé pour le web');
+    } catch (error) {
+      console.error('❌ Erreur initialisation Firebase:', error);
+    }
+  </script>
+
+  <!-- Flutter Bootstrap -->
+  <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+    // Cacher l'écran de chargement quand Flutter est prêt
+    window.addEventListener('flutter-first-frame', function () {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.style.opacity = '0';
+        loading.style.transition = 'opacity 0.5s ease-out';
+        setTimeout(() => {
+          loading.style.display = 'none';
+        }, 500);
+      }
+      console.log('✅ Application Flutter chargée');
+    });
+
+    // Enregistrer le service worker pour les notifications
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('firebase-messaging-sw.js')
+        .then((registration) => {
+          console.log('✅ Service Worker enregistré:', registration);
+        })
+        .catch((error) => {
+          console.error('❌ Erreur Service Worker:', error);
+        });
+    }
+  </script>
+</body>
+</html>

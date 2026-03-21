@@ -1,0 +1,112 @@
+{
+  "@@locale": "fr",
+  "appTitle": "Kalyto",
+  "appTagline": "Votre solution ERP intégrée",
+
+  "login": "Se connecter",
+  "email": "Email",
+  "emailHint": "Entrez votre email",
+  "emailRequired": "Veuillez entrer votre email",
+  "emailInvalid": "Veuillez entrer un email valide",
+  "password": "Mot de passe",
+  "passwordHint": "Entrez votre mot de passe",
+  "passwordRequired": "Veuillez entrer votre mot de passe",
+  "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
+  "forgotPassword": "Mot de passe oublié ?",
+  "welcomeUser": "Bienvenue {name} !",
+  "@welcomeUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "refresh": "Actualiser",
+  "export": "Exporter",
+  "search": "Rechercher",
+  "close": "Fermer",
+  "confirm": "Confirmer",
+  "back": "Retour",
+  "next": "Suivant",
+  "submit": "Soumettre",
+  "validate": "Valider",
+  "reject": "Rejeter",
+
+  "settings": "Paramètres",
+  "settingsTitle": "Paramètres de l'application",
+  "currentCompany": "Société courante",
+  "currentCompanyHint": "Choisir la société pour les données affichées (clients, factures, journal, etc.)",
+  "noCompanySelected": "Aucune société sélectionnée",
+  "allCompaniesMono": "Toutes (mode mono-société)",
+  "companyUpdated": "Société mise à jour",
+  "companyAll": "Société : toutes",
+
+  "companyDataSection": "Données société / Entreprise",
+  "nineaLabel": "NINEA (numéro d'identification ivoirien de l'entreprise)",
+  "nineaField": "NINEA entreprise",
+  "nineaHint": "9 chiffres",
+  "nineaHelp": "Exactement 9 chiffres. Enregistré localement jusqu'à liaison avec l'API.",
+
+  "apiConfigSection": "Configuration API",
+  "apiUrl": "URL de l'API",
+  "resetApiUrl": "Réinitialiser l'URL",
+  "resetApiUrlSubtitle": "Restaurer l'URL par défaut",
+
+  "generalSection": "Général",
+  "notifications": "Notifications",
+  "notificationsSubtitle": "Recevoir des notifications push",
+  "language": "Langue",
+  "selectLanguage": "Sélectionner la langue",
+  "languageFrench": "Français",
+  "languageEnglish": "English",
+  "theme": "Thème",
+  "themeLight": "Clair",
+  "themeDark": "Sombre",
+  "themeSystem": "Système",
+  "selectTheme": "Sélectionner le thème",
+
+  "testsSection": "Tests et développement",
+  "testPushNotifications": "Test Notifications Push",
+  "testPushSubtitle": "Tester la configuration Firebase et FCM",
+
+  "securitySection": "Sécurité",
+  "changePassword": "Changer le mot de passe",
+  "changePasswordSubtitle": "Modifier votre mot de passe",
+  "activeSessions": "Sessions actives",
+  "activeSessionsSubtitle": "Gérer les sessions ouvertes",
+
+  "menuInvoices": "Factures",
+  "menuPayments": "Paiements",
+  "menuExpenses": "Dépenses",
+  "menuSalaries": "Salaires",
+  "menuJournal": "Journal des comptes",
+  "menuGrandLivre": "Grand livre",
+  "menuBalance": "Balance",
+  "menuTaxes": "Impôts et Taxes",
+  "menuStock": "Stock",
+  "menuInventory": "Inventaire physique",
+  "menuSuppliers": "Fournisseurs",
+  "menuAttendance": "Pointage",
+  "menuMyTasks": "Mes tâches",
+  "roleLabel": "Rôle: {role}",
+  "@roleLabel": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+
+  "dashboardComptable": "Comptable",
+  "home": "Accueil",
+  "profile": "Profil",
+  "saveSettings": "Sauvegarder les paramètres",
+  "allCompaniesMonoShort": "Toutes (mono-société)",
+  "dashboardLoadError": "Impossible de charger le dashboard.",
+  "retry": "Réessayer"
+}

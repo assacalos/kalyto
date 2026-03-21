@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "17317714210",
+    "project_id": "easyconnect-aleb",
+    "storage_bucket": "easyconnect-aleb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17317714210:android:5f64c0c8712dba30d6ed7b",
+        "android_client_info": {
+          "package_name": "com.easyconnect.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGNKXbt8dIALOA-DSGvCqwJBHPjfmGMVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

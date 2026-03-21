@@ -1,0 +1,112 @@
+{
+  "@@locale": "en",
+  "appTitle": "Kalyto",
+  "appTagline": "Your integrated ERP solution",
+
+  "login": "Log in",
+  "email": "Email",
+  "emailHint": "Enter your email",
+  "emailRequired": "Please enter your email",
+  "emailInvalid": "Please enter a valid email",
+  "password": "Password",
+  "passwordHint": "Enter your password",
+  "passwordRequired": "Please enter your password",
+  "passwordMinLength": "Password must be at least 6 characters",
+  "forgotPassword": "Forgot password?",
+  "welcomeUser": "Welcome {name}!",
+  "@welcomeUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "refresh": "Refresh",
+  "export": "Export",
+  "search": "Search",
+  "close": "Close",
+  "confirm": "Confirm",
+  "back": "Back",
+  "next": "Next",
+  "submit": "Submit",
+  "validate": "Validate",
+  "reject": "Reject",
+
+  "settings": "Settings",
+  "settingsTitle": "Application settings",
+  "currentCompany": "Current company",
+  "currentCompanyHint": "Choose the company for displayed data (clients, invoices, journal, etc.)",
+  "noCompanySelected": "No company selected",
+  "allCompaniesMono": "All (single company mode)",
+  "companyUpdated": "Company updated",
+  "companyAll": "Company: all",
+
+  "companyDataSection": "Company data",
+  "nineaLabel": "NINEA (Ivorian company identification number)",
+  "nineaField": "Company NINEA",
+  "nineaHint": "9 digits",
+  "nineaHelp": "Exactly 9 digits. Stored locally until linked with the API.",
+
+  "apiConfigSection": "API configuration",
+  "apiUrl": "API URL",
+  "resetApiUrl": "Reset URL",
+  "resetApiUrlSubtitle": "Restore default URL",
+
+  "generalSection": "General",
+  "notifications": "Notifications",
+  "notificationsSubtitle": "Receive push notifications",
+  "language": "Language",
+  "selectLanguage": "Select language",
+  "languageFrench": "French",
+  "languageEnglish": "English",
+  "theme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  "selectTheme": "Select theme",
+
+  "testsSection": "Tests and development",
+  "testPushNotifications": "Test Push Notifications",
+  "testPushSubtitle": "Test Firebase and FCM configuration",
+
+  "securitySection": "Security",
+  "changePassword": "Change password",
+  "changePasswordSubtitle": "Update your password",
+  "activeSessions": "Active sessions",
+  "activeSessionsSubtitle": "Manage open sessions",
+
+  "menuInvoices": "Invoices",
+  "menuPayments": "Payments",
+  "menuExpenses": "Expenses",
+  "menuSalaries": "Salaries",
+  "menuJournal": "Journal",
+  "menuGrandLivre": "General ledger",
+  "menuBalance": "Balance",
+  "menuTaxes": "Taxes",
+  "menuStock": "Stock",
+  "menuInventory": "Physical inventory",
+  "menuSuppliers": "Suppliers",
+  "menuAttendance": "Attendance",
+  "menuMyTasks": "My tasks",
+  "roleLabel": "Role: {role}",
+  "@roleLabel": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+
+  "dashboardComptable": "Accounting",
+  "home": "Home",
+  "profile": "Profile",
+  "saveSettings": "Save settings",
+  "allCompaniesMonoShort": "All (single company)",
+  "dashboardLoadError": "Unable to load dashboard.",
+  "retry": "Retry"
+}

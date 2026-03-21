@@ -1,0 +1,10 @@
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -22,6 +22,7 @@
+ apply plugin: 'com.android.library'
+ 
+ android {
++    namespace 'fr.g123k.flutterappbadge.flutterappbadger'
+     compileSdkVersion 29
+ 
+     defaultConfig {
