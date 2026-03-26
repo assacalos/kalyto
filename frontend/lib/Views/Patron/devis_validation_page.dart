@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/providers/devis_notifier.dart';
 import 'package:easyconnect/Models/devis_model.dart';
 import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class DevisValidationPage extends ConsumerStatefulWidget {
   const DevisValidationPage({super.key});
@@ -17,26 +20,54 @@ class _DevisValidationPageState extends ConsumerState<DevisValidationPage>
   late TabController _tabController;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) _loadDevis();
+      if (_tabController.indexIsChanging) return;
+      _loadDevis(forceRefresh: true);
     });
     ref.read(devisProvider.notifier).loadDevis(status: null, forceRefresh: true);
+    _startAutoRefresh();
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
+  int? _statusForTab() {
+    switch (_tabController.index) {
+      case 1:
+        return 1;
+      case 2:
+        return 2;
+      case 3:
+        return 3;
+      default:
+        return null;
+    }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      _loadDevis(forceRefresh: true);
+    });
+  }
+
   Future<void> _loadDevis({bool forceRefresh = false}) async {
-    await ref.read(devisProvider.notifier).loadDevis(status: null, forceRefresh: forceRefresh);
+    await ref
+        .read(devisProvider.notifier)
+        .loadDevis(status: _statusForTab(), forceRefresh: forceRefresh);
   }
 
   @override

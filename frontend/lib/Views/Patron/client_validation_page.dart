@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/providers/client_notifier.dart';
 import 'package:easyconnect/Models/client_model.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class ClientValidationPage extends ConsumerStatefulWidget {
   const ClientValidationPage({super.key});
@@ -19,6 +22,7 @@ class _ClientValidationPageState extends ConsumerState<ClientValidationPage>
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
   int? _lastLoadedStatus;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -30,14 +34,25 @@ class _ClientValidationPageState extends ConsumerState<ClientValidationPage>
     // Charger toutes les données une fois au démarrage (forceRefresh pour que le patron voie les nouveaux clients)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadAllClients();
+      _startAutoRefresh();
     });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      _loadAllClients();
+    });
   }
 
   void _onTabChanged() {

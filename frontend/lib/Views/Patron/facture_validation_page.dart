@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/providers/invoice_notifier.dart';
@@ -5,6 +7,7 @@ import 'package:easyconnect/Models/invoice_model.dart';
 import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
 import 'package:easyconnect/utils/tva_rates_ci.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class FactureValidationPage extends ConsumerStatefulWidget {
   const FactureValidationPage({super.key});
@@ -19,28 +22,59 @@ class _FactureValidationPageState extends ConsumerState<FactureValidationPage>
   late TabController _tabController;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.indexIsChanging) _loadInvoices();
+      if (_tabController.indexIsChanging) return;
+      _loadInvoices(forceRefresh: true);
     });
-    _loadInvoices();
+    _loadInvoices(forceRefresh: true);
+    _startAutoRefresh();
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadInvoices() async {
+  String _statusForTab() {
+    switch (_tabController.index) {
+      case 1:
+        return 'en_attente';
+      case 2:
+        return 'valide';
+      case 3:
+        return 'rejete';
+      default:
+        return 'all';
+    }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      _loadInvoices(forceRefresh: true);
+    });
+  }
+
+  Future<void> _loadInvoices({bool forceRefresh = false}) async {
     final notifier = ref.read(invoiceProvider.notifier);
-    notifier.filterInvoices(status: 'all', start: null, end: null, search: '');
-    await notifier.loadInvoices(forceRefresh: true);
+    notifier.filterInvoices(
+      status: _statusForTab(),
+      start: null,
+      end: null,
+      search: '',
+    );
+    await notifier.loadInvoices(forceRefresh: forceRefresh);
     await notifier.loadPendingInvoices();
   }
 
@@ -57,7 +91,7 @@ class _FactureValidationPageState extends ConsumerState<FactureValidationPage>
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadInvoices,
+            onPressed: () => _loadInvoices(forceRefresh: true),
             tooltip: 'Actualiser',
           ),
         ],
