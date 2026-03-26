@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\Controller;
+use App\Http\Requests\RejectDevisRequest;
+use App\Http\Requests\StoreDevisRequest;
+use App\Http\Requests\UpdateDevisRequest;
 use App\Services\NotificationService;
 use App\Traits\CachesData;
 use App\Traits\ScopesByCompany;
@@ -42,6 +45,8 @@ class DevisController extends Controller
                     'message' => 'Utilisateur non authentifié'
                 ], 401);
             }
+
+            $this->authorize('viewAny', Devis::class);
             
             // Générer une clé de cache unique basée sur les paramètres
             $cacheKey = 'devis_list_' . md5(json_encode([
@@ -124,7 +129,7 @@ class DevisController extends Controller
             }
 
             // Filtre par rôle : commercial ne voit que ses devis
-            if ($user->role == 2) { // Commercial
+            if ($user->isCommercial()) {
                 $query->where('user_id', $user->id);
             }
             $this->scopeByCompany($query, $request);
@@ -181,27 +186,10 @@ class DevisController extends Controller
     /**
      * Créer un nouveau devis
      */
-    public function store(Request $request)
+    public function store(StoreDevisRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'client_id' => 'required|exists:clients,id',
-                'date_validite' => 'nullable|date|after:today',
-                'notes' => 'nullable|string',
-                'remise_globale' => 'nullable|numeric|min:0',
-                'tva' => 'nullable|numeric|min:0|max:100',
-                'conditions' => 'nullable|string',
-                'commentaire' => 'nullable|string',
-                'titre' => 'nullable|string|max:255',
-                'delai_livraison' => 'nullable|string|max:255',
-                'garantie' => 'nullable|string|max:255',
-                'status' => 'nullable|integer|in:0,1', // 0 = brouillon, 1 = envoyé
-                'items' => 'required|array|min:1',
-                'items.*.reference' => 'nullable|string|max:100',
-                'items.*.designation' => 'required|string',
-                'items.*.quantite' => 'required|integer|min:1',
-                'items.*.prix_unitaire' => 'required|numeric|min:0'
-            ]);
+            $validated = $request->validated();
 
             DB::beginTransaction();
 
@@ -276,10 +264,14 @@ class DevisController extends Controller
     /**
      * Afficher un devis spécifique
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
-            $devis = Devis::with(['client', 'commercial', 'items'])->findOrFail($id);
+            $query = Devis::with(['client', 'commercial', 'items']);
+            $this->scopeByCompany($query, $request);
+            $devis = $query->findOrFail($id);
+
+            $this->authorize('view', $devis);
             
             return response()->json([
                 'success' => true,
@@ -297,28 +289,11 @@ class DevisController extends Controller
     /**
      * Modifier un devis (quel que soit le statut)
      */
-    public function update(Request $request, $id)
+    public function update(UpdateDevisRequest $request, $id)
     {
         try {
+            $validated = $request->validated();
             $devis = Devis::findOrFail($id);
-
-            $validated = $request->validate([
-                'client_id' => 'required|exists:clients,id',
-                'date_validite' => 'nullable|date|after:today',
-                'notes' => 'nullable|string',
-                'remise_globale' => 'nullable|numeric|min:0',
-                'tva' => 'nullable|numeric|min:0|max:100',
-                'conditions' => 'nullable|string',
-                'commentaire' => 'nullable|string',
-                'titre' => 'nullable|string|max:255',
-                'delai_livraison' => 'nullable|string|max:255',
-                'garantie' => 'nullable|string|max:255',
-                'items' => 'required|array|min:1',
-                'items.*.reference' => 'nullable|string|max:100',
-                'items.*.designation' => 'required|string',
-                'items.*.quantite' => 'required|integer|min:1',
-                'items.*.prix_unitaire' => 'required|numeric|min:0'
-            ]);
 
             DB::beginTransaction();
 
@@ -369,10 +344,14 @@ class DevisController extends Controller
     /**
      * Supprimer un devis (uniquement si brouillon)
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         try {
-            $devis = Devis::findOrFail($id);
+            $query = Devis::query();
+            $this->scopeByCompany($query, $request);
+            $devis = $query->findOrFail($id);
+
+            $this->authorize('delete', $devis);
 
             $devis->delete();
 
@@ -422,9 +401,13 @@ class DevisController extends Controller
     /**
      * Accepter un devis
      */
-    public function accept($id) {
+    public function accept(Request $request, $id) {
         try {
-            $devis = Devis::findOrFail($id);
+            $query = Devis::with(['client', 'commercial', 'items']);
+            $this->scopeByCompany($query, $request);
+            $devis = $query->findOrFail($id);
+
+            $this->authorize('validate', $devis);
 
             // Accepter/valider le devis (quel que soit le statut actuel)
             $devis->status = 2; // Accepté/Validé
@@ -454,19 +437,17 @@ class DevisController extends Controller
     /**
      * Valider un devis (méthode pour les patrons) - alias de accept
      */
-    public function validateDevis($id) {
-        return $this->accept($id);
+    public function validateDevis(Request $request, $id) {
+        return $this->accept($request, $id);
     }
 
     /**
      * Refuser un devis
      */
-    public function reject(Request $request, $id)
+    public function reject(RejectDevisRequest $request, $id)
     {
         try {
-            $validated = $request->validate([
-                'commentaire' => 'required|string'
-            ]);
+            $validated = $request->validated();
 
             $devis = Devis::findOrFail($id);
 
@@ -679,6 +660,8 @@ class DevisController extends Controller
                     'message' => 'Utilisateur non authentifié'
                 ], 401);
             }
+
+            $this->authorize('viewAny', Devis::class);
             
             $validated = $request->validate([
                 'status' => 'nullable|integer',
@@ -689,6 +672,7 @@ class DevisController extends Controller
             ]);
             
             $query = Devis::query();
+            $this->scopeByCompany($query, $request);
             
             // Filtre par statut
             if (isset($validated['status'])) {
@@ -714,7 +698,7 @@ class DevisController extends Controller
             }
             
             // Filtre par rôle : commercial ne voit que ses devis
-            if ($user->role == 2) { // Commercial
+            if ($user->isCommercial()) {
                 $query->where('user_id', $user->id);
             }
             
@@ -751,6 +735,8 @@ class DevisController extends Controller
                     'message' => 'Utilisateur non authentifié'
                 ], 401);
             }
+
+            $this->authorize('viewAny', Devis::class);
             
             $validated = $request->validate([
                 'status' => 'nullable|integer',
@@ -760,6 +746,7 @@ class DevisController extends Controller
             ]);
             
             $query = Devis::query();
+            $this->scopeByCompany($query, $request);
             
             // Filtres de date
             if (isset($validated['start_date'])) {
@@ -780,7 +767,7 @@ class DevisController extends Controller
             }
             
             // Filtre par rôle : commercial ne voit que ses devis
-            if ($user->role == 2) { // Commercial
+            if ($user->isCommercial()) {
                 $query->where('user_id', $user->id);
             }
             
@@ -788,7 +775,10 @@ class DevisController extends Controller
             $count = $query->count();
             
             // Statistiques par statut
-            $byStatus = Devis::selectRaw('status, count(*) as count')
+            $byStatusBase = Devis::query();
+            $this->scopeByCompany($byStatusBase, $request);
+            $byStatus = $byStatusBase
+                ->selectRaw('status, count(*) as count')
                 ->when(isset($validated['start_date']), function($q) use ($validated) {
                     $q->whereDate('date_creation', '>=', $validated['start_date']);
                 })
@@ -798,7 +788,7 @@ class DevisController extends Controller
                 ->when(isset($validated['user_id']), function($q) use ($validated) {
                     $q->where('user_id', $validated['user_id']);
                 })
-                ->when($user->role == 2, function($q) use ($user) {
+                ->when($user->isCommercial(), function($q) use ($user) {
                     $q->where('user_id', $user->id);
                 })
                 ->groupBy('status')
@@ -842,6 +832,8 @@ class DevisController extends Controller
                 ], 401);
             }
 
+            $this->authorize('viewAny', Devis::class);
+
             $totalDevis = Devis::count();
             $devisByStatus = Devis::selectRaw('status, count(*) as count')
                 ->groupBy('status')
@@ -855,7 +847,7 @@ class DevisController extends Controller
 
             // Si commercial, compter ses devis
             $userDevisCount = 0;
-            if ($user->role == 2) {
+            if ($user->isCommercial()) {
                 $userDevisCount = Devis::where('user_id', $user->id)->count();
             }
 

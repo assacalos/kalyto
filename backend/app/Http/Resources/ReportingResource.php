@@ -15,7 +15,7 @@ class ReportingResource extends JsonResource
     public function toArray(Request $request): array
     {
         $user = $request->user();
-        $isPatronOrAdmin = $user && in_array($user->role, [1, 6]);
+        $isPatronOrAdmin = $user && $user->isAdminOrPatron();
 
         return [
             'id' => $this->id,

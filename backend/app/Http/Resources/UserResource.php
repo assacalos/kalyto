@@ -15,6 +15,9 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         $roleName = method_exists($this->resource, 'getRoleName') ? $this->resource->getRoleName() : 'Utilisateur';
+        $roleSlug = method_exists($this->resource, 'appRole')
+            ? $this->resource->appRole()?->slug()
+            : null;
 
         return [
             'id' => $this->id,
@@ -24,6 +27,7 @@ class UserResource extends JsonResource
             'avatar' => $this->avatar ? asset('storage/' . $this->avatar) : null,
             'role' => $this->role,
             'role_name' => $roleName,
+            'role_slug' => $roleSlug,
             'company_id' => $this->company_id,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AppRole;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -53,7 +54,7 @@ class User extends Authenticatable
      */
     public function isAdmin()
     {
-        return $this->role == 1;
+        return $this->hasAppRole(AppRole::Admin);
     }
 
     /**
@@ -61,7 +62,7 @@ class User extends Authenticatable
      */
     public function isCommercial()
     {
-        return $this->role == 2;
+        return $this->hasAppRole(AppRole::Commercial);
     }
 
     /**
@@ -69,7 +70,7 @@ class User extends Authenticatable
      */
     public function isComptable()
     {
-        return $this->role == 3;
+        return $this->hasAppRole(AppRole::Comptable);
     }
 
     /**
@@ -77,7 +78,7 @@ class User extends Authenticatable
      */
     public function isRH()
     {
-        return $this->role == 4;
+        return $this->hasAppRole(AppRole::RH);
     }
 
     /**
@@ -85,7 +86,7 @@ class User extends Authenticatable
      */
     public function isTechnicien()
     {
-        return $this->role == 5;
+        return $this->hasAppRole(AppRole::Technicien);
     }
 
     /**
@@ -93,7 +94,26 @@ class User extends Authenticatable
      */
     public function isPatron()
     {
-        return $this->role == 6;
+        return $this->hasAppRole(AppRole::Patron);
+    }
+
+    /**
+     * Rôle métier typé (null si valeur inconnue en base).
+     */
+    public function appRole(): ?AppRole
+    {
+        return AppRole::tryFromId($this->role);
+    }
+
+    public function hasAppRole(AppRole $role): bool
+    {
+        return (int) $this->role === $role->value;
+    }
+
+    /** Admin ou patron (routes souvent groupées `role:1,6`). */
+    public function isAdminOrPatron(): bool
+    {
+        return $this->isAdmin() || $this->isPatron();
     }
 
     /**

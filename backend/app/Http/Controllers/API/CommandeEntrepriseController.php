@@ -53,7 +53,7 @@ class CommandeEntrepriseController extends Controller
             }
 
             // Si commercial → filtre ses propres commandes
-            if ($user->role == 2) { // Commercial
+            if ($user->isCommercial()) {
                 $query->where('user_id', $user->id);
             }
 
@@ -93,7 +93,7 @@ class CommandeEntrepriseController extends Controller
 
             // Vérification des permissions pour les commerciaux
             $user = auth()->user();
-            if ($user->role == 2 && $commande->user_id !== $user->id) {
+            if ($user->isCommercial() && $commande->user_id !== $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès refusé à cette commande'

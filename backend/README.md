@@ -128,6 +128,20 @@ php artisan migrate
 php artisan db:seed --class=AdminSeeder
 ```
 
+## Rôles et permissions (évolution)
+
+Voir **[docs/ROLES_ET_PERMISSIONS.md](docs/ROLES_ET_PERMISSIONS.md)** : stratégie **incrémentale** (enum `App\Enums\AppRole` + colonne `users.role` actuelle), et quand envisager **spatie/laravel-permission**.
+
+## Autorisation (ressources sensibles)
+
+Pour les **devis** et **factures**, l’API applique :
+
+- **Policies** (`App\Policies\DevisPolicy`, `FacturePolicy`) : règles métier (société, rôle commercial vs comptable/patron, validation patron, etc.) via `$this->authorize(...)` dans les contrôleurs.
+- **Form Requests** — devis : `StoreDevisRequest`, `UpdateDevisRequest`, `RejectDevisRequest` — factures : `StoreFactureRequest`, `UpdateFactureRequest`, `ValidateFactureRequest`, `RejectFactureRequest` (validation + `authorize()` côté serveur).
+- **Réponses JSON** : les détails exposés passent par `DevisResource` / `FactureResource` (éviter de renvoyer des modèles bruts dans les nouvelles réponses).
+
+Les **middlewares `role:`** sur les routes restent un premier filtre ; les policies garantissent la cohérence même si une route est mal configurée.
+
 ## Technologies utilisées
 
 - Laravel 10+

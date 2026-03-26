@@ -69,7 +69,7 @@ class ClientController extends Controller
             // Si commercial (role 2) → filtre uniquement ses clients
 
             // Les comptables (role 3), techniciens (role 5) et autres voient tous les clients
-            if ($user->role == 2) { // 2 = commercial
+            if ($user->isCommercial()) {
                 $query->where('user_id', $user->id);
             }
 
@@ -296,13 +296,13 @@ class ClientController extends Controller
     {
         $user = $request->user();
         $dateKey = Carbon::now()->format('Y-m-d');
-        $cacheKey = $user->role == 2 ? "client_stats:{$dateKey}:{$user->id}" : "client_stats:{$dateKey}";
+        $cacheKey = $user->isCommercial() ? "client_stats:{$dateKey}:{$user->id}" : "client_stats:{$dateKey}";
 
         $data = $this->rememberDailyStats($cacheKey, $dateKey, function () use ($user, $request) {
             $query = Client::with(['user']);
 
             // Si commercial → filtre uniquement ses clients
-            if ($user->role == 2) { // 2 = commercial
+            if ($user->isCommercial()) {
                 $query->where('user_id', $user->id);
             }
             $this->scopeByCompany($query, $request);

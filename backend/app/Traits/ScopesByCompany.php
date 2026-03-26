@@ -29,7 +29,7 @@ trait ScopesByCompany
         if (!$user) {
             return null;
         }
-        if ($user->role == 1) {
+        if ($user->isAdmin()) {
             return $this->requestCompanyId($request);
         }
         return $user->company_id ? (int) $user->company_id : null;

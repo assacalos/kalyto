@@ -58,7 +58,7 @@ class ExpenseController extends Controller
             }
 
             // Si employé → filtre ses propres dépenses
-            if ($user->role == 4) { // Employé
+            if ($user->isRH()) {
                 $query->where('employee_id', $user->id);
             }
             $this->scopeByCompany($query, $request);
@@ -681,7 +681,7 @@ class ExpenseController extends Controller
             }
             
             // Si employé → filtre ses propres dépenses
-            if ($user->role == 4) { // Employé
+            if ($user->isRH()) {
                 $query->where('employee_id', $user->id);
             }
             
@@ -745,7 +745,7 @@ class ExpenseController extends Controller
             }
             
             // Si employé → filtre ses propres dépenses
-            if ($user->role == 4) { // Employé
+            if ($user->isRH()) {
                 $query->where('employee_id', $user->id);
             }
             

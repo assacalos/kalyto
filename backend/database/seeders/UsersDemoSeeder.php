@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AppRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -19,42 +20,42 @@ class UsersDemoSeeder extends Seeder
                 'nom' => 'Admin',
                 'prenom' => 'Système',
                 'email' => 'admin@kalyto-demo.com',
-                'role' => 1,
+                'role' => AppRole::Admin->value,
                 'is_active' => true,
             ],
             [
                 'nom' => 'Diallo',
                 'prenom' => 'Mamadou',
                 'email' => 'commercial@kalyto-demo.com',
-                'role' => 2,
+                'role' => AppRole::Commercial->value,
                 'is_active' => true,
             ],
             [
                 'nom' => 'Koné',
                 'prenom' => 'Aïcha',
                 'email' => 'comptable@kalyto-demo.com',
-                'role' => 3,
+                'role' => AppRole::Comptable->value,
                 'is_active' => true,
             ],
             [
                 'nom' => 'Ouattara',
                 'prenom' => 'Fatou',
                 'email' => 'rh@kalyto-demo.com',
-                'role' => 4,
+                'role' => AppRole::RH->value,
                 'is_active' => true,
             ],
             [
                 'nom' => 'Bamba',
                 'prenom' => 'Ibrahim',
                 'email' => 'technicien@kalyto-demo.com',
-                'role' => 5,
+                'role' => AppRole::Technicien->value,
                 'is_active' => true,
             ],
             [
                 'nom' => 'Traoré',
                 'prenom' => 'Seydou',
                 'email' => 'patron@kalyto-demo.com',
-                'role' => 6,
+                'role' => AppRole::Patron->value,
                 'is_active' => true,
             ],
         ];

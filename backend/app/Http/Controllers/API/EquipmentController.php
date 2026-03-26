@@ -105,7 +105,7 @@ class EquipmentController extends Controller
             }
 
             // Si technicien → filtre ses équipements assignés OU créés par lui
-            if ($user->role == 5) { // Technicien
+            if ($user->isTechnicien()) {
                 $query->where(function($q) use ($user) {
                     $q->where('assigned_to', 'like', '%' . $user->prenom . ' ' . $user->nom . '%')
                       ->orWhere('created_by', $user->id);

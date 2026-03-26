@@ -634,7 +634,7 @@ class AttendanceController extends Controller
      */
     private function canApprove(User $user): bool
     {
-        return in_array($user->role, [1, 4, 6]) || $user->isAdmin() || $user->isPatron();
+        return $user->isAdmin() || $user->isRH() || $user->isPatron();
     }
 
     /**

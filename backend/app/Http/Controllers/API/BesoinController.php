@@ -31,7 +31,7 @@ class BesoinController extends Controller
 
         $query = Besoin::with(['creator', 'treatedByUser'])->orderByDesc('created_at');
 
-        if ($user->role == 5) {
+        if ($user->isTechnicien()) {
             $query->where('created_by', $user->id);
         }
 
@@ -62,7 +62,7 @@ class BesoinController extends Controller
     public function store(Request $request)
     {
         $user = $request->user();
-        if (!$user || $user->role != 5) {
+        if (!$user || ! $user->isTechnicien()) {
             return response()->json(['success' => false, 'message' => 'Réservé au technicien'], 403);
         }
 
@@ -115,7 +115,7 @@ class BesoinController extends Controller
     public function markTreated(Request $request, $id)
     {
         $user = $request->user();
-        if (!$user || !in_array($user->role, [1, 6])) {
+        if (!$user || ! $user->isAdminOrPatron()) {
             return response()->json(['success' => false, 'message' => 'Réservé au patron ou admin'], 403);
         }
 

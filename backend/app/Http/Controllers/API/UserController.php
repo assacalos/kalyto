@@ -542,7 +542,7 @@ class UserController extends Controller
     {
         try {
             $user = $request->user();
-            if (!$user || !in_array($user->role, [1, 6])) {
+            if (!$user || ! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Non autorisé',
@@ -584,7 +584,7 @@ class UserController extends Controller
     {
         try {
             $user = $request->user();
-            if (!$user || !in_array($user->role, [1, 6])) {
+            if (!$user || ! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Non autorisé',
@@ -605,7 +605,7 @@ class UserController extends Controller
             }
 
             $companyId = null;
-            if ($user->role === 6) {
+            if ($user->isPatron()) {
                 // Patron valide → le validé reçoit la société du patron
                 $companyId = $user->company_id;
             } else {
@@ -641,7 +641,7 @@ class UserController extends Controller
     {
         try {
             $user = $request->user();
-            if (!$user || !in_array($user->role, [1, 6])) {
+            if (!$user || ! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Non autorisé',

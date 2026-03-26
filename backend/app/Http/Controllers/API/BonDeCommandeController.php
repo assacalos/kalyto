@@ -43,12 +43,12 @@ class BonDeCommandeController extends Controller
             $query = BonDeCommande::with(['fournisseur', 'createur', 'items']);
             
             // Filtrage par rôle : Commercial ne voit que ses propres bons de commande
-            if ($user->role == 2) { // Commercial
+            if ($user->isCommercial()) {
                 $query->where('user_id', $user->id);
             }
             
             // Filtrage par user_id (pour les autres rôles)
-            if ($request->has('user_id') && $user->role != 2) {
+            if ($request->has('user_id') && ! $user->isCommercial()) {
                 $query->where('user_id', $request->user_id);
             }
             

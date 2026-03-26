@@ -37,12 +37,11 @@ class RoleMiddleware
         
         // Dédupliquer les rôles autorisés
         $allowedRoles = array_unique($allowedRoles);
-        
-        // Accepter aussi si l'utilisateur est Patron ou Admin (au cas où le rôle en base diffère)
-        $isAllowed = in_array($userRole, $allowedRoles)
-            || (method_exists($user, 'isPatron') && $user->isPatron())
-            || (method_exists($user, 'isAdmin') && $user->isAdmin());
-        
+
+        // Accès strict : l’utilisateur doit être dans la liste (ex. admin = inclure explicitement `1` dans la route).
+        // Ancien bypass patron/admin retiré : il permettait d’outrepasser des routes réservées à un seul rôle (ex. technicien).
+        $isAllowed = in_array($userRole, $allowedRoles, true);
+
         if (!$isAllowed) {
             return response()->json([
                 'message' => 'Accès refusé. Rôle insuffisant.',

@@ -74,7 +74,7 @@ class SalaryController extends Controller
             }
 
             // Si employé → filtre ses propres salaires (recherche dans la table employees)
-            if ($user->role == 4) { // Employé
+            if ($user->isRH()) {
                 $employee = Employee::where('email', $user->email)->first();
                 if ($employee) {
                     $query->where('employee_id', $employee->id);
@@ -929,7 +929,7 @@ if ($this->effectiveCompanyId($request) !== null) {
             }
             
             // Si employé → filtre ses propres salaires
-            if ($user->role == 4) { // Employé
+            if ($user->isRH()) {
                 $employee = Employee::where('email', $user->email)->first();
                 if ($employee) {
                     $query->where('employee_id', $employee->id);
@@ -996,7 +996,7 @@ if ($this->effectiveCompanyId($request) !== null) {
             }
             
             // Si employé → filtre ses propres salaires
-            if ($user->role == 4) { // Employé
+            if ($user->isRH()) {
                 $employee = Employee::where('email', $user->email)->first();
                 if ($employee) {
                     $query->where('employee_id', $employee->id);

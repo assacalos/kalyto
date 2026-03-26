@@ -78,7 +78,7 @@ class InterventionController extends Controller
             }
 
             // Si technicien → filtre ses interventions
-            if ($user->role == 5) { // Technicien
+            if ($user->isTechnicien()) {
                 $query->where('created_by', $user->id);
             }
 

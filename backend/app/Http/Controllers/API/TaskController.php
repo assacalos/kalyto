@@ -36,7 +36,7 @@ class TaskController extends Controller
 
             $query = Task::with(['assignedTo', 'assignedBy'])->ordered();
 
-            if (in_array($user->role, [1, 6])) {
+            if ($user->isAdminOrPatron()) {
                 // Patron ou Admin : voir toutes les tâches
                 if ($request->filled('assigned_to')) {
                     $query->forUser((int) $request->assigned_to);
@@ -90,7 +90,7 @@ class TaskController extends Controller
                     'message' => 'Tâche non trouvée',
                 ], 404);
             }
-            if (!in_array($user->role, [1, 6]) && $task->assigned_to !== $user->id) {
+            if (! $user->isAdminOrPatron() && $task->assigned_to !== $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès non autorisé à cette tâche',
@@ -116,7 +116,7 @@ class TaskController extends Controller
     {
         try {
             $user = $request->user();
-            if (!in_array($user->role, [1, 6])) {
+            if (! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Seul le patron ou l\'administrateur peut assigner des tâches',
@@ -182,7 +182,7 @@ class TaskController extends Controller
             }
 
             $previousStatus = $task->status;
-            $isPatronOrAdmin = in_array($user->role, [1, 6]);
+            $isPatronOrAdmin = $user->isAdminOrPatron();
             $isAssignee = $task->assigned_to === $user->id;
 
             if ($isPatronOrAdmin) {
@@ -266,7 +266,7 @@ class TaskController extends Controller
     {
         try {
             $user = $request->user();
-            if (!in_array($user->role, [1, 6])) {
+            if (! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Seul le patron ou l\'administrateur peut supprimer des tâches',

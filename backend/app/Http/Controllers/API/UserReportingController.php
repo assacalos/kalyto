@@ -64,7 +64,7 @@ class UserReportingController extends Controller
             }
 
             // Si commercial/comptable/technicien → filtre ses propres reportings
-            if (in_array($user->role, [2, 3, 5])) {
+            if ($user->isCommercial() || $user->isComptable() || $user->isTechnicien()) {
                 $query->where('user_id', $user->id);
             }
 
@@ -195,7 +195,7 @@ class UserReportingController extends Controller
             $reporting = Reporting::findOrFail($id);
             
             // Vérifier les permissions
-            if ($reporting->user_id !== $user->id && !in_array($user->role, [1, 6])) {
+            if ($reporting->user_id !== $user->id && ! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès refusé à ce reporting'
@@ -281,7 +281,7 @@ class UserReportingController extends Controller
             $reporting = Reporting::findOrFail($id);
             
             // Vérifier les permissions (seuls les admins et patrons peuvent approuver)
-            if (!in_array($user->role, [1, 6])) {
+            if (! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès refusé pour approuver ce reporting'
@@ -328,7 +328,7 @@ class UserReportingController extends Controller
             $reporting = Reporting::findOrFail($id);
             
             // Vérifier les permissions (seuls les admins et patrons peuvent rejeter)
-            if (!in_array($user->role, [1, 6])) {
+            if (! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès refusé pour rejeter ce reporting'
@@ -375,7 +375,7 @@ class UserReportingController extends Controller
             $user = $request->user();
             
             // Vérifier les permissions (Patron ou Admin uniquement)
-            if (!in_array($user->role, [1, 6])) {
+            if (! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès non autorisé'
@@ -449,7 +449,7 @@ class UserReportingController extends Controller
             $reporting = Reporting::findOrFail($id);
             
             // Vérifier les permissions (seul l'auteur ou admin/patron peut supprimer)
-            if ($reporting->user_id !== $user->id && !in_array($user->role, [1, 6])) {
+            if ($reporting->user_id !== $user->id && ! $user->isAdminOrPatron()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Accès refusé pour supprimer ce reporting'
@@ -531,7 +531,7 @@ class UserReportingController extends Controller
             $query = Reporting::query();
             
             // Si commercial/comptable/technicien → filtre ses propres reportings
-            if (in_array($user->role, [2, 3, 5])) {
+            if ($user->isCommercial() || $user->isComptable() || $user->isTechnicien()) {
                 $query->where('user_id', $user->id);
             }
             
