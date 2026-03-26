@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
@@ -18,7 +17,6 @@ class BonDeCommandeFournisseurService {
     int? fournisseurId,
   }) async {
     try {
-      final token = storage.read('token');
       final userRole = storage.read('userRole');
       final userId = storage.read('userId');
 
@@ -29,26 +27,18 @@ class BonDeCommandeFournisseurService {
         queryParams['fournisseur_id'] = fournisseurId.toString();
       if (userRole == 2) queryParams['user_id'] = userId.toString();
 
-      final queryString =
-          queryParams.isEmpty
-              ? ''
-              : '?${Uri(queryParameters: queryParams).query}';
-      final url = '$baseUrl/bons-de-commande-list$queryString';
+      var uri = HttpInterceptor.apiUri('bons-de-commande-list');
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+      final url = uri.toString();
       AppLogger.httpRequest('GET', url, tag: 'BON_COMMANDE_FOURNISSEUR_SERVICE');
 
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          )
-          .timeout(
-            AppConfig.extraLongTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(uri).timeout(
+        AppConfig.extraLongTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       AppLogger.httpResponse(
         response.statusCode,

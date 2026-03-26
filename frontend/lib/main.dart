@@ -15,7 +15,6 @@ import 'package:easyconnect/utils/logger.dart';
 import 'package:easyconnect/utils/auth_error_handler.dart';
 import 'package:easyconnect/utils/error_helper.dart';
 import 'package:easyconnect/utils/validation_helper.dart';
-import 'package:easyconnect/utils/validation_helper_enhanced.dart';
 import 'package:easyconnect/gen_l10n/app_localizations.dart';
 import 'package:easyconnect/providers/auth_notifier.dart';
 import 'package:easyconnect/providers/locale_provider.dart';
@@ -299,25 +298,13 @@ class _MyAppState extends ConsumerState<MyApp> {
       );
     };
 
-    // ValidationHelper
+    // ValidationHelper (listes + validateurs de formulaire — un seul callback)
     validationHelperShowSnackbar = (String title, String message,
         {Color? backgroundColor, Color? colorText, Duration? duration}) {
       rootScaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Text('$title: $message'),
           backgroundColor: backgroundColor,
-          duration: duration ?? const Duration(seconds: 3),
-        ),
-      );
-    };
-
-    // ValidationHelperEnhanced
-    validationHelperEnhancedShowSnackbar = (String title, String message,
-        {Color? backgroundColor, Color? colorText, Duration? duration}) {
-      rootScaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          content: Text('$title: $message'),
-          backgroundColor: backgroundColor ?? Colors.orange,
           duration: duration ?? const Duration(seconds: 3),
         ),
       );
@@ -384,12 +371,12 @@ class _MyAppState extends ConsumerState<MyApp> {
           iconTheme: IconThemeData(color: Colors.black87),
           actionsIconTheme: IconThemeData(color: Colors.black87),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 1,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           clipBehavior: Clip.antiAlias,
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
         ),

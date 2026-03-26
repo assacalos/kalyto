@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:easyconnect/services/session_service.dart';
-import 'package:easyconnect/utils/constant.dart';
-
 class PatronDashboardService {
   // Récupérer les données de validation en attente
   Future<Map<String, int>> getPendingValidations() async {
@@ -66,17 +64,13 @@ class PatronDashboardService {
                   .length; // 0 = en attente pour clients
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer les devis en attente
       try {
         final devisResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/devis-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('devis-list'),
         );
         if (devisResponse.statusCode == 200) {
           final devisData = json.decode(devisResponse.body);
@@ -112,7 +106,7 @@ class PatronDashboardService {
               }).length; // 1 = en attente
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer les bordereaux en attente
@@ -154,7 +148,7 @@ class PatronDashboardService {
               }).length; // 1 = en attente
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer les factures en attente
@@ -187,7 +181,7 @@ class PatronDashboardService {
                   .length; // 'draft' = en attente
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer TOUS les paiements (tous statuts) pour compter ceux en attente
@@ -225,7 +219,7 @@ class PatronDashboardService {
                   .length;
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer TOUTES les dépenses (tous statuts) pour compter celles en attente
@@ -259,7 +253,7 @@ class PatronDashboardService {
                   .length;
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer TOUS les salaires (tous statuts) pour compter ceux en attente
@@ -293,7 +287,7 @@ class PatronDashboardService {
                   .length;
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer TOUS les rapports (tous statuts) pour compter ceux en attente
@@ -327,7 +321,7 @@ class PatronDashboardService {
                   .length;
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       // Récupérer TOUS les pointages (tous statuts) pour compter ceux en attente
@@ -361,7 +355,7 @@ class PatronDashboardService {
                   .length;
         } else {
         }
-      } catch (e, stackTrace) {
+      } catch (e) {
       }
 
       final result = {
@@ -376,7 +370,7 @@ class PatronDashboardService {
         'pointages': pendingPointages,
       };
       return result;
-    } catch (e, stackTrace) {
+    } catch (e) {
       return {
         'clients': 0,
         'proformas': 0,

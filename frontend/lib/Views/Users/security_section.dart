@@ -1,4 +1,3 @@
-import 'package:easyconnect/Models/user_model.dart';
 import 'package:easyconnect/providers/user_management_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,14 +29,6 @@ class SecuritySection extends ConsumerWidget {
             trailing: Switch(
               value: user.isActive,
               onChanged: (value) {
-                final updatedUser = UserModel(
-                  id: user.id,
-                  nom: user.nom,
-                  prenom: user.prenom,
-                  email: user.email,
-                  role: user.role,
-                  isActive: value,
-                );
                 notifier.toggleUserStatus(user.id, value);
               },
             ),

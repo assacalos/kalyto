@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:easyconnect/Models/reporting_model.dart';
 import 'package:easyconnect/Models/pagination_response.dart';

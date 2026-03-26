@@ -60,7 +60,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           user = ref.read(authProvider).user;
         }
       } catch (_) {}
-      if (user == null) user = ref.read(authProvider).user;
+      user ??= ref.read(authProvider).user;
 
       if (user != null) {
         _syncCompanyForNonAdmin(user);

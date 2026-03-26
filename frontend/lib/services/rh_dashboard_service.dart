@@ -1,16 +1,10 @@
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'dart:convert';
-import 'package:get_storage/get_storage.dart';
-import 'package:easyconnect/utils/constant.dart';
 
 class RhDashboardService {
-  final storage = GetStorage();
-
   // Récupérer les entités en attente
   Future<Map<String, int>> getPendingEntities() async {
     try {
-      final token = storage.read('token');
       int pendingLeaves = 0;
       int pendingRecruitments = 0;
       int pendingAttendance = 0;
@@ -19,11 +13,7 @@ class RhDashboardService {
       // Récupérer les congés en attente
       try {
         final leavesResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/leaves-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('leaves-list'),
         );
         if (leavesResponse.statusCode == 200) {
           final leavesData = json.decode(leavesResponse.body);
@@ -34,17 +24,12 @@ class RhDashboardService {
                     .length; // 'pending' = en attente
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // Récupérer les recrutements en attente
       try {
         final recruitmentsResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/recruitments-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('recruitments-list'),
         );
         if (recruitmentsResponse.statusCode == 200) {
           final recruitmentsData = json.decode(recruitmentsResponse.body);
@@ -55,17 +40,12 @@ class RhDashboardService {
                     .length; // 'draft' = en attente
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // Récupérer les pointages en attente
       try {
         final attendanceResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/attendance-punch-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('attendance-punch-list'),
         );
         if (attendanceResponse.statusCode == 200) {
           final attendanceData = json.decode(attendanceResponse.body);
@@ -76,17 +56,12 @@ class RhDashboardService {
                     .length; // 'pending' = en attente
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // Récupérer les salaires en attente
       try {
         final salariesResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/salaries-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('salaries-list'),
         );
         if (salariesResponse.statusCode == 200) {
           final salariesData = json.decode(salariesResponse.body);
@@ -97,8 +72,7 @@ class RhDashboardService {
                     .length; // 'pending' = en attente
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       return {
         'leaves': pendingLeaves,
@@ -114,7 +88,6 @@ class RhDashboardService {
   // Récupérer les entités validées
   Future<Map<String, int>> getValidatedEntities() async {
     try {
-      final token = storage.read('token');
       int validatedEmployees = 0;
       int validatedLeaves = 0;
       int validatedRecruitments = 0;
@@ -123,11 +96,7 @@ class RhDashboardService {
       // Récupérer les employés validés
       try {
         final employeesResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/employees-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('employees-list'),
         );
         if (employeesResponse.statusCode == 200) {
           final employeesData = json.decode(employeesResponse.body);
@@ -138,17 +107,12 @@ class RhDashboardService {
                     .length;
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // Récupérer les congés validés
       try {
         final leavesResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/leaves-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('leaves-list'),
         );
         if (leavesResponse.statusCode == 200) {
           final leavesData = json.decode(leavesResponse.body);
@@ -159,17 +123,12 @@ class RhDashboardService {
                     .length; // 'approved' = validé
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // Récupérer les recrutements validés
       try {
         final recruitmentsResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/recruitments-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('recruitments-list'),
         );
         if (recruitmentsResponse.statusCode == 200) {
           final recruitmentsData = json.decode(recruitmentsResponse.body);
@@ -182,17 +141,12 @@ class RhDashboardService {
                     .length; // 'published' = validé
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // Récupérer les salaires validés
       try {
         final salariesResponse = await HttpInterceptor.get(
-          Uri.parse('$baseUrl/api/salaries-list'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
+          HttpInterceptor.apiUri('salaries-list'),
         );
         if (salariesResponse.statusCode == 200) {
           final salariesData = json.decode(salariesResponse.body);
@@ -207,8 +161,7 @@ class RhDashboardService {
                     .length; // 'approved' ou 'paid' = validé
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       return {
         'employees': validatedEmployees,
@@ -224,14 +177,8 @@ class RhDashboardService {
   // Récupérer les statistiques montants
   Future<Map<String, dynamic>> getStatistics() async {
     try {
-      final token = storage.read('token');
-
       final response = await HttpInterceptor.get(
-        Uri.parse('$baseUrl/rh/dashboard/statistics'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        HttpInterceptor.apiUri('rh/dashboard/statistics'),
       );
 
       if (response.statusCode == 200) {
@@ -259,14 +206,8 @@ class RhDashboardService {
   // Récupérer les données complètes du dashboard
   Future<Map<String, dynamic>> getDashboardData() async {
     try {
-      final token = storage.read('token');
-
       final response = await HttpInterceptor.get(
-        Uri.parse('$baseUrl/rh/dashboard/data'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        HttpInterceptor.apiUri('rh/dashboard/data'),
       );
 
       if (response.statusCode == 200) {

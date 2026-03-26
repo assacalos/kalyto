@@ -130,8 +130,9 @@ class Bordereau {
         if (dateValue is DateTime) return dateValue;
         if (dateValue is String) {
           final trimmed = dateValue.trim();
-          if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL')
+          if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL') {
             return null;
+          }
           // Corriger "22025" en "2025"
           final corrected = trimmed.replaceFirst('22025', '2025');
           try {
@@ -195,8 +196,9 @@ class Bordereau {
     if (value is int) return value;
     if (value is String) {
       final trimmed = value.trim();
-      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL')
+      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL') {
         return null;
+      }
       return int.tryParse(trimmed);
     }
     if (value is num) {

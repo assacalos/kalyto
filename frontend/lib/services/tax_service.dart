@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/tax_model.dart';
@@ -19,16 +18,9 @@ class TaxService {
   // Tester la connectivité à l'API pour les impôts
   Future<bool> testTaxConnection() async {
     try {
-      final token = storage.read('token');
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/taxes-list'),
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          )
-          .timeout(AppConfig.extraLongTimeout);
+      final response = await HttpInterceptor.get(
+        HttpInterceptor.apiUri('taxes-list'),
+      ).timeout(AppConfig.extraLongTimeout);
       return response.statusCode == 200;
     } catch (e) {
       return false;
@@ -44,7 +36,6 @@ class TaxService {
     int perPage = 15,
   }) async {
     try {
-      final token = storage.read('token');
       String url = '${AppConfig.baseUrl}/taxes';
       List<String> params = [];
 
@@ -68,14 +59,7 @@ class TaxService {
       AppLogger.httpRequest('GET', url, tag: 'TAX_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
-        operation:
-            () => HttpInterceptor.get(
-              Uri.parse(url),
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-              },
-            ),
+        operation: () => HttpInterceptor.get(Uri.parse(url)),
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
@@ -153,7 +137,6 @@ class TaxService {
     String? search,
   }) async {
     try {
-      final token = storage.read('token');
       var queryParams = <String, String>{};
       if (status != null) queryParams['status'] = status;
       if (type != null) queryParams['type'] = type;
@@ -165,13 +148,7 @@ class TaxService {
               : '?${Uri(queryParameters: queryParams).query}';
 
       final url = '$baseUrl/taxes-list$queryString';
-      final response = await HttpInterceptor.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      final response = await HttpInterceptor.get(Uri.parse(url));
 
       // Si le status code est 200 ou 201, traiter directement
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -516,8 +493,6 @@ class TaxService {
   // Récupérer les catégories d'impôts
   Future<List<TaxCategory>> getTaxCategories() async {
     try {
-      final token = storage.read('token');
-
       // Essayer plusieurs endpoints possibles
       final endpoints = [
         '/tax-categories',
@@ -530,15 +505,9 @@ class TaxService {
 
       for (final endpoint in endpoints) {
         try {
-          final response = await http
-              .get(
-                Uri.parse('$baseUrl$endpoint'),
-                headers: {
-                  'Accept': 'application/json',
-                  'Authorization': 'Bearer $token',
-                },
-              )
-              .timeout(AppConfig.extraLongTimeout);
+          final response = await HttpInterceptor.get(
+            Uri.parse('${AppConfig.baseUrl}$endpoint'),
+          ).timeout(AppConfig.extraLongTimeout);
           if (response.statusCode == 200) {
             final responseBody = json.decode(response.body);
             if (responseBody is Map) {}

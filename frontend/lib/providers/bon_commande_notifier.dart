@@ -11,7 +11,6 @@ import 'package:easyconnect/utils/dashboard_refresh_helper.dart';
 import 'package:easyconnect/utils/notification_helper.dart';
 import 'package:easyconnect/utils/cache_helper.dart';
 import 'package:easyconnect/utils/logger.dart';
-import 'package:easyconnect/utils/auth_error_handler.dart';
 import 'package:easyconnect/utils/app_config.dart';
 
 final bonCommandeProvider =

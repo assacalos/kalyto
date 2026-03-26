@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:easyconnect/Models/contract_model.dart';
 import 'package:easyconnect/Models/pagination_response.dart';
@@ -193,13 +192,11 @@ class ContractService {
         url += '?${params.join('&')}';
       }
 
-      final response = await http
-          .get(Uri.parse(url), headers: ApiService.headers())
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(Uri.parse(url)).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -237,16 +234,13 @@ class ContractService {
   // Récupérer un contrat par ID
   Future<Contract> getContract(int id) async {
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/contracts/$id'),
-            headers: ApiService.headers(),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(
+        HttpInterceptor.apiUri('contracts/$id'),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

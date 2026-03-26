@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:easyconnect/Models/leave_model.dart';
 import 'package:easyconnect/Models/pagination_response.dart';
@@ -29,25 +28,23 @@ class LeaveService {
     List<String>? attachmentPaths,
   }) async {
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/leave-requests'),
-            headers: ApiService.headers(),
-            body: jsonEncode({
-              'employee_id': employeeId,
-              'leave_type': leaveType,
-              'start_date': startDate.toIso8601String(),
-              'end_date': endDate.toIso8601String(),
-              'reason': reason,
-              'comments': comments,
-              'attachment_paths': attachmentPaths ?? [],
-            }),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.post(
+        HttpInterceptor.apiUri('leave-requests'),
+        headers: ApiService.headers(),
+        body: jsonEncode({
+          'employee_id': employeeId,
+          'leave_type': leaveType,
+          'start_date': startDate.toIso8601String(),
+          'end_date': endDate.toIso8601String(),
+          'reason': reason,
+          'comments': comments,
+          'attachment_paths': attachmentPaths ?? [],
+        }),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
@@ -86,13 +83,11 @@ class LeaveService {
         url += '?${params.join('&')}';
       }
 
-      final response = await http
-          .get(Uri.parse(url), headers: ApiService.headers())
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(Uri.parse(url)).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -153,8 +148,7 @@ class LeaveService {
       AppLogger.httpRequest('GET', url, tag: 'LEAVE_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
-        operation:
-            () => HttpInterceptor.get(Uri.parse(url), headers: ApiService.headers()),
+        operation: () => HttpInterceptor.get(Uri.parse(url)),
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
@@ -217,13 +211,11 @@ class LeaveService {
         url += '?${params.join('&')}';
       }
 
-      final response = await http
-          .get(Uri.parse(url), headers: ApiService.headers())
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(Uri.parse(url)).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -245,16 +237,13 @@ class LeaveService {
   // Récupérer une demande de congé par ID
   Future<LeaveRequest> getLeaveRequest(int id) async {
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/leave-requests/$id'),
-            headers: ApiService.headers(),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(
+        HttpInterceptor.apiUri('leave-requests/$id'),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -434,13 +423,11 @@ class LeaveService {
         url += '?${params.join('&')}';
       }
 
-      final response = await http
-          .get(Uri.parse(url), headers: ApiService.headers())
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(Uri.parse(url)).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -458,16 +445,13 @@ class LeaveService {
   // Récupérer les types de congés disponibles
   Future<List<LeaveType>> getLeaveTypes() async {
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/leave-types'),
-            headers: ApiService.headers(),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(
+        HttpInterceptor.apiUri('leave-types'),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

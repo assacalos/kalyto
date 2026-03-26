@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/payment_model.dart';
@@ -27,17 +26,9 @@ class PaymentService {
   // Tester la connectivité à l'API pour les paiements
   Future<bool> testPaymentConnection() async {
     try {
-      final token = storage.read('token');
-
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/payments'),
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          )
-          .timeout(AppConfig.extraLongTimeout);
+      final response = await HttpInterceptor.get(
+        HttpInterceptor.apiUri('payments'),
+      ).timeout(AppConfig.extraLongTimeout);
 
       final result = ApiService.parseResponse(response);
       return result['success'] == true;
@@ -438,20 +429,14 @@ class PaymentService {
     String? comments,
   }) async {
     try {
-      final token = storage.read('token');
-
       // Essayer d'abord la route française (POST)
       String url = '$baseUrl/paiements-validate/$paymentId';
-      http.Response response;
+      var response;
 
       try {
         response = await HttpInterceptor.post(
           Uri.parse(url),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
+          headers: ApiService.headers(),
           body: comments != null ? jsonEncode({'comments': comments}) : '{}',
         );
       } catch (e) {
@@ -459,11 +444,7 @@ class PaymentService {
         url = '$baseUrl/payments/$paymentId/approve';
         response = await HttpInterceptor.patch(
           Uri.parse(url),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
+          headers: ApiService.headers(),
           body: comments != null ? jsonEncode({'comments': comments}) : null,
         );
       }
@@ -498,20 +479,14 @@ class PaymentService {
     String? reason,
   }) async {
     try {
-      final token = storage.read('token');
-
       // Essayer d'abord la route française (POST)
       String url = '$baseUrl/paiements-reject/$paymentId';
-      http.Response response;
+      var response;
 
       try {
         response = await HttpInterceptor.post(
           Uri.parse(url),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
+          headers: ApiService.headers(),
           body: reason != null ? jsonEncode({'reason': reason}) : '{}',
         );
       } catch (e) {
@@ -519,11 +494,7 @@ class PaymentService {
         url = '$baseUrl/payments/$paymentId/reject';
         response = await HttpInterceptor.patch(
           Uri.parse(url),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
+          headers: ApiService.headers(),
           body: reason != null ? jsonEncode({'reason': reason}) : null,
         );
       }

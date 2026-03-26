@@ -61,7 +61,6 @@ class _BonCommandeListPageState extends ConsumerState<BonCommandeListPage>
   Widget build(BuildContext context) {
     final state = ref.watch(bonCommandeProvider);
     final notifier = ref.read(bonCommandeProvider.notifier);
-    final userRole = ref.read(authProvider).user?.role;
 
     return Scaffold(
       appBar: AppBar(

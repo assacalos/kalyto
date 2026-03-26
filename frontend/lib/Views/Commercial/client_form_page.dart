@@ -1,6 +1,6 @@
 import 'package:easyconnect/providers/client_notifier.dart';
 import 'package:easyconnect/Views/Components/app_bar_back_button.dart';
-import 'package:easyconnect/utils/validation_helper_enhanced.dart';
+import 'package:easyconnect/utils/validation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -194,7 +194,7 @@ class _ClientFormPageState extends ConsumerState<ClientFormPage> {
                   keyboardType: TextInputType.number,
                   maxLength: 9,
                   validator: (value) =>
-                      ValidationHelperEnhanced.validateNinea(value, required: false),
+                      ValidationHelper.validateNinea(value, required: false),
                 ),
                 SizedBox(height: 20),
                 Consumer(

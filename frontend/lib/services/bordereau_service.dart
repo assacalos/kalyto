@@ -1,5 +1,5 @@
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
+import 'package:easyconnect/services/api_service.dart';
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/bordereau_model.dart';
@@ -25,7 +25,6 @@ class BordereauService {
     String? search,
   }) async {
     try {
-      final token = storage.read('token');
       final userRole = storage.read('userRole');
       final userId = storage.read('userId');
 
@@ -38,27 +37,18 @@ class BordereauService {
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
       queryParams.addAll(CompanyService.companyQueryParam());
 
-      final uri = Uri.parse('${AppConfig.baseUrl}/bordereaux').replace(
+      final uri = HttpInterceptor.apiUri('bordereaux').replace(
         queryParameters: queryParams,
       );
       AppLogger.httpRequest('GET', uri.toString(), tag: 'BORDEREAU_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () =>
-                http
-                    .get(
-                      uri,
-                      headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer $token',
-                      },
-                    )
-                    .timeout(
-                      AppConfig.extraLongTimeout,
-                      onTimeout: () =>
-                          throw Exception('Timeout: le serveur ne répond pas'),
-                    ),
+            () => HttpInterceptor.get(uri).timeout(
+                  AppConfig.extraLongTimeout,
+                  onTimeout: () =>
+                      throw Exception('Timeout: le serveur ne répond pas'),
+                ),
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
@@ -107,7 +97,6 @@ class BordereauService {
         return cached;
       }
 
-      final token = storage.read('token');
       final userRole = storage.read('userRole');
       final userId = storage.read('userId');
 
@@ -116,29 +105,20 @@ class BordereauService {
       if (userRole == 2) queryParams['user_id'] = userId.toString();
       queryParams.addAll(CompanyService.companyQueryParam());
 
-      final queryString =
-          queryParams.isEmpty
-              ? ''
-              : '?${Uri(queryParameters: queryParams).query}';
-      final url = '${AppConfig.baseUrl}/bordereaux-list$queryString';
+      var uri = HttpInterceptor.apiUri('bordereaux-list');
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
+      final url = uri.toString();
       AppLogger.httpRequest('GET', url, tag: 'BORDEREAU_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () =>
-                http
-                    .get(
-                      Uri.parse(url),
-                      headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer $token',
-                      },
-                    )
-                    .timeout(
-                      AppConfig.extraLongTimeout,
-                      onTimeout: () =>
-                          throw Exception('Timeout: le serveur ne répond pas'),
-                    ),
+            () => HttpInterceptor.get(uri).timeout(
+                  AppConfig.extraLongTimeout,
+                  onTimeout: () =>
+                      throw Exception('Timeout: le serveur ne répond pas'),
+                ),
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
@@ -198,8 +178,6 @@ class BordereauService {
 
   Future<Bordereau> createBordereau(Bordereau bordereau) async {
     try {
-      final token = storage.read('token');
-
       final bordereauJson = bordereau.toJson();
 
       CompanyService.addCompanyIdToBody(bordereauJson);
@@ -209,19 +187,14 @@ class BordereauService {
         tag: 'BORDEREAU_SERVICE',
       );
 
-      final url = '${AppConfig.baseUrl}/bordereaux-create';
-      AppLogger.httpRequest('POST', url, tag: 'BORDEREAU_SERVICE');
+      final uri = HttpInterceptor.apiUri('bordereaux-create');
+      AppLogger.httpRequest('POST', uri.toString(), tag: 'BORDEREAU_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () => http
-                .post(
-                  Uri.parse(url),
-                  headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer $token',
-                  },
+            () => HttpInterceptor.post(
+                  uri,
+                  headers: ApiService.headers(),
                   body: json.encode(bordereauJson),
                 )
                 .timeout(
@@ -234,7 +207,7 @@ class BordereauService {
 
       AppLogger.httpResponse(
         response.statusCode,
-        url,
+        uri.toString(),
         tag: 'BORDEREAU_SERVICE',
       );
 
@@ -516,7 +489,6 @@ class BordereauService {
             CacheHelper.clearByPrefix('bordereaux_');
 
             // Chercher dans les bordereaux récents (sans cache)
-            final token = storage.read('token');
             final userRole = storage.read('userRole');
             final userId = storage.read('userId');
 
@@ -524,25 +496,18 @@ class BordereauService {
             if (userRole == 2) queryParams['user_id'] = userId.toString();
             queryParams['search'] = reference; // Rechercher par référence
 
-            final queryString =
-                queryParams.isEmpty
-                    ? ''
-                    : '?${Uri(queryParameters: queryParams).query}';
-            final searchUrl =
-                '${AppConfig.baseUrl}/bordereaux-list$queryString';
+            Uri searchUri = HttpInterceptor.apiUri('bordereaux-list');
+            if (queryParams.isNotEmpty) {
+              searchUri = searchUri.replace(queryParameters: queryParams);
+            }
+            final searchUrl = searchUri.toString();
 
             AppLogger.debug(
               'Recherche via: $searchUrl',
               tag: 'BORDEREAU_SERVICE',
             );
 
-            final searchResponse = await HttpInterceptor.get(
-              Uri.parse(searchUrl),
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-              },
-            );
+            final searchResponse = await HttpInterceptor.get(searchUri);
 
             if (searchResponse.statusCode == 200) {
               final searchData = json.decode(searchResponse.body);
@@ -639,22 +604,15 @@ class BordereauService {
 
   Future<Bordereau> updateBordereau(Bordereau bordereau) async {
     try {
-      final token = storage.read('token');
-      final response = await http
-          .put(
-            Uri.parse('${AppConfig.baseUrl}/bordereaux-update/${bordereau.id}'),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: json.encode(bordereau.toJson()),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.put(
+        HttpInterceptor.apiUri('bordereaux-update/${bordereau.id}'),
+        headers: ApiService.headers(),
+        body: json.encode(bordereau.toJson()),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         return Bordereau.fromJson(json.decode(response.body)['data']);
@@ -667,13 +625,8 @@ class BordereauService {
 
   Future<bool> deleteBordereau(int bordereauId) async {
     try {
-      final token = storage.read('token');
       final response = await HttpInterceptor.delete(
-        Uri.parse('${AppConfig.baseUrl}/bordereaux-delete/$bordereauId'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        HttpInterceptor.apiUri('bordereaux-delete/$bordereauId'),
       );
 
       return response.statusCode == 200;
@@ -684,13 +637,8 @@ class BordereauService {
 
   Future<bool> submitBordereau(int bordereauId) async {
     try {
-      final token = storage.read('token');
       final response = await HttpInterceptor.post(
-        Uri.parse('${AppConfig.baseUrl}/bordereaux/$bordereauId/submit'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        HttpInterceptor.apiUri('bordereaux/$bordereauId/submit'),
       );
 
       return response.statusCode == 200;
@@ -701,15 +649,8 @@ class BordereauService {
 
   Future<bool> approveBordereau(int bordereauId) async {
     try {
-      final token = storage.read('token');
-      final url = '${AppConfig.baseUrl}/bordereaux-validate/$bordereauId';
-
       final response = await HttpInterceptor.post(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        HttpInterceptor.apiUri('bordereaux-validate/$bordereauId'),
       );
 
       // Si le status code est 200 ou 201, considérer comme succès
@@ -746,33 +687,23 @@ class BordereauService {
 
   Future<bool> rejectBordereau(int bordereauId, String commentaire) async {
     try {
-      final token = storage.read('token');
       // Essayer d'abord la route avec le format /bordereaux/{id}/reject
-      String url = '${AppConfig.baseUrl}/bordereaux/$bordereauId/reject';
       final body = {'commentaire': commentaire};
+      final bodyJson = json.encode(body);
 
-      http.Response response;
+      dynamic response;
       try {
         response = await HttpInterceptor.post(
-          Uri.parse(url),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: json.encode(body),
+          HttpInterceptor.apiUri('bordereaux/$bordereauId/reject'),
+          headers: ApiService.headers(),
+          body: bodyJson,
         );
       } catch (e) {
         // Si la première route échoue, essayer l'ancienne route
-        url = '${AppConfig.baseUrl}/bordereaux-reject/$bordereauId';
         response = await HttpInterceptor.post(
-          Uri.parse(url),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: json.encode(body),
+          HttpInterceptor.apiUri('bordereaux-reject/$bordereauId'),
+          headers: ApiService.headers(),
+          body: bodyJson,
         );
       }
 
@@ -801,13 +732,8 @@ class BordereauService {
 
   Future<Map<String, dynamic>> getBordereauStats() async {
     try {
-      final token = storage.read('token');
       final response = await HttpInterceptor.get(
-        Uri.parse('${AppConfig.baseUrl}/bordereaux/stats'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        HttpInterceptor.apiUri('bordereaux/stats'),
       );
 
       if (response.statusCode == 200) {

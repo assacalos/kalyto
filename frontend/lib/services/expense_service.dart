@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
+import 'package:easyconnect/services/api_service.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/expense_model.dart';
 import 'package:easyconnect/Models/pagination_response.dart';
@@ -208,25 +208,18 @@ class ExpenseService {
   // Créer une dépense
   Future<Expense> createExpense(Map<String, dynamic> expenseData) async {
     try {
-      final token = storage.read('token');
       CompanyService.addCompanyIdToBody(expenseData);
       final jsonBody = json.encode(expenseData);
 
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/expenses-create'),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: jsonBody,
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.post(
+        HttpInterceptor.apiUri('expenses-create'),
+        headers: ApiService.headers(),
+        body: jsonBody,
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseBody = json.decode(response.body);
         return Expense.fromJson(responseBody['data'] ?? responseBody);
@@ -245,22 +238,15 @@ class ExpenseService {
     Map<String, dynamic> expenseData,
   ) async {
     try {
-      final token = storage.read('token');
-      final response = await http
-          .put(
-            Uri.parse('$baseUrl/expenses-update/$id'),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: json.encode(expenseData),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.put(
+        HttpInterceptor.apiUri('expenses-update/$id'),
+        headers: ApiService.headers(),
+        body: json.encode(expenseData),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         return Expense.fromJson(responseBody['data'] ?? responseBody);

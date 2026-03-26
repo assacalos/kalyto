@@ -59,8 +59,6 @@ class PatronPermissions {
         return [APPROVE_DECISIONS];
       case PatronSection.chat:
         return [USE_CHAT];
-      default:
-        return [VIEW_DASHBOARD];
     }
   }
 }

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/gen_l10n/app_localizations.dart';
 import 'package:easyconnect/utils/app_config.dart';
-import 'package:easyconnect/utils/validation_helper_enhanced.dart';
+import 'package:easyconnect/utils/validation_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:easyconnect/Models/company_model.dart';
 import 'package:easyconnect/services/company_service.dart';
@@ -185,7 +185,7 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
                       maxLength: 9,
                       onChanged: (_) => setState(() {}),
                       validator: (value) =>
-                          ValidationHelperEnhanced.validateNinea(value, required: false),
+                          ValidationHelper.validateNinea(value, required: false),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -779,7 +779,7 @@ class _AppSettingsPageState extends ConsumerState<AppSettingsPage> {
 
   void _saveSettings() {
     final ninea = _companyNineaController.text.replaceAll(RegExp(r'\s'), '').trim();
-    final nineaError = ValidationHelperEnhanced.validateNinea(ninea, required: false);
+    final nineaError = ValidationHelper.validateNinea(ninea, required: false);
     if (nineaError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

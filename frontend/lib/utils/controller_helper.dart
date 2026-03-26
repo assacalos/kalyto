@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// Helper pour accéder aux contrôleurs de façon sécurisée.
 /// Sans Get : findOrNull retourne null, require lance une erreur.
 /// Préférer Riverpod (ref.read(provider)) à la place.

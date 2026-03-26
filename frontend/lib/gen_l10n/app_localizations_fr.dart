@@ -39,7 +39,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get passwordRequired => 'Veuillez entrer votre mot de passe';
 
   @override
-  String get passwordMinLength => 'Le mot de passe doit contenir au moins 6 caractères';
+  String get passwordMinLength =>
+      'Le mot de passe doit contenir au moins 6 caractères';
 
   @override
   String get forgotPassword => 'Mot de passe oublié ?';
@@ -101,7 +102,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get currentCompany => 'Société courante';
 
   @override
-  String get currentCompanyHint => 'Choisir la société pour les données affichées (clients, factures, journal, etc.)';
+  String get currentCompanyHint =>
+      'Choisir la société pour les données affichées (clients, factures, journal, etc.)';
 
   @override
   String get noCompanySelected => 'Aucune société sélectionnée';
@@ -119,7 +121,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get companyDataSection => 'Données société / Entreprise';
 
   @override
-  String get nineaLabel => 'NINEA (numéro d\'identification ivoirien de l\'entreprise)';
+  String get nineaLabel =>
+      'NINEA (numéro d\'identification ivoirien de l\'entreprise)';
 
   @override
   String get nineaField => 'NINEA entreprise';
@@ -128,7 +131,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get nineaHint => '9 chiffres';
 
   @override
-  String get nineaHelp => 'Exactement 9 chiffres. Enregistré localement jusqu\'à liaison avec l\'API.';
+  String get nineaHelp =>
+      'Exactement 9 chiffres. Enregistré localement jusqu\'à liaison avec l\'API.';
 
   @override
   String get apiConfigSection => 'Configuration API';

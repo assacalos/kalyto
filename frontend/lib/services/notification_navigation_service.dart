@@ -124,7 +124,7 @@ class NotificationNavigationService {
     return '/${segments.join('/')}';
   }
 
-  /// Routes dont la page détail attend Get.arguments (objet), pas seulement l'id.
+  /// Routes dont la page détail attend l'objet (ex. via `extra` go_router), pas seulement l'id.
   /// Pour celles-ci on redirige vers la liste pour éviter un crash.
   static const _detailRoutesNeedingObject = [
     '/expenses/',
@@ -215,7 +215,7 @@ class NotificationNavigationService {
   }
 
   /// Navigue vers une route avec des arguments optionnels
-  /// Certaines pages détail attendent Get.arguments (objet) : on va alors vers la liste.
+  /// Certaines pages détail attendent l'objet complet (ex. `extra`) : on va alors vers la liste.
   void _navigateToRoute(String route, String? entityId) {
     try {
       AppLogger.info(
@@ -229,7 +229,7 @@ class NotificationNavigationService {
         route = route.replaceAll(':entityId', entityId);
       }
 
-      // Page détail qui attend l'objet en Get.arguments : aller vers la liste
+      // Page détail qui attend l'objet (ex. extra) : aller vers la liste
       for (final prefix in _detailRoutesNeedingObject) {
         if (route.startsWith(prefix) && route.length > prefix.length) {
           final listRoute = prefix.replaceAll('/', '');

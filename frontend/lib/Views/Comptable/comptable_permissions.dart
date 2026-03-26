@@ -65,8 +65,6 @@ class AccountantPermissions {
         return [USE_CHAT];
       case AccountantSection.profile:
         return [MANAGE_SETTINGS];
-      default:
-        return [VIEW_DASHBOARD];
     }
   }
 }

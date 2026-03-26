@@ -54,8 +54,6 @@ class RhPermissions {
         return [USE_CHAT];
       case RhSection.profile:
         return [MANAGE_SETTINGS];
-      default:
-        return [VIEW_DASHBOARD];
     }
   }
 }

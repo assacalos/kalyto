@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';

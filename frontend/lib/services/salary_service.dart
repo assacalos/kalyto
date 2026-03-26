@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/salary_model.dart';
@@ -20,17 +19,9 @@ class SalaryService {
   // Tester la connectivité à l'API pour les salaires
   Future<bool> testSalaryConnection() async {
     try {
-      final token = storage.read('token');
-
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/salaries-list'),
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          )
-          .timeout(AppConfig.extraLongTimeout);
+      final response = await HttpInterceptor.get(
+        HttpInterceptor.apiUri('salaries-list'),
+      ).timeout(AppConfig.extraLongTimeout);
 
       return response.statusCode == 200;
     } catch (e) {

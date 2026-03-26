@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AnimatedPageRoute extends PageRouteBuilder {
   final Widget page;
+  @override
   final RouteSettings settings;
 
   AnimatedPageRoute({required this.page, required this.settings})

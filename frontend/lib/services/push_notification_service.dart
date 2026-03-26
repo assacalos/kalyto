@@ -310,7 +310,7 @@ class PushNotificationService {
     });
 
     // Note: getInitialMessage() est maintenant géré dans main.dart après l'initialisation complète
-    // pour éviter les problèmes de timing avec GetX
+    // pour éviter les problèmes de timing avant que le routeur soit prêt
   }
 
   /// Extrait et normalise les données de notification au format FCM v1

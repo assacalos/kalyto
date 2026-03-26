@@ -101,7 +101,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentCompany => 'Current company';
 
   @override
-  String get currentCompanyHint => 'Choose the company for displayed data (clients, invoices, journal, etc.)';
+  String get currentCompanyHint =>
+      'Choose the company for displayed data (clients, invoices, journal, etc.)';
 
   @override
   String get noCompanySelected => 'No company selected';
@@ -128,7 +129,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nineaHint => '9 digits';
 
   @override
-  String get nineaHelp => 'Exactly 9 digits. Stored locally until linked with the API.';
+  String get nineaHelp =>
+      'Exactly 9 digits. Stored locally until linked with the API.';
 
   @override
   String get apiConfigSection => 'API configuration';

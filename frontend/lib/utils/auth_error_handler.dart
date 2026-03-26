@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:easyconnect/services/session_service.dart';
 import 'package:http/http.dart' as http;

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:easyconnect/Models/supplier_model.dart';
 import 'package:easyconnect/utils/constant.dart';
+import 'package:easyconnect/services/api_service.dart';
 import 'package:easyconnect/utils/auth_error_handler.dart';
 import 'package:easyconnect/utils/cache_helper.dart';
 import 'package:easyconnect/utils/logger.dart';
@@ -21,7 +21,6 @@ class SupplierService {
   // Récupérer tous les fournisseurs
   Future<List<Supplier>> getSuppliers({String? status, String? search}) async {
     try {
-      final token = storage.read('token');
       var queryParams = <String, String>{};
       if (status != null && status != 'all') {
         // Normaliser le statut vers le format backend
@@ -42,13 +41,7 @@ class SupplierService {
       final url = '$baseUrl/fournisseurs-list$queryString';
       
       // Si le status code est 200 ou 201, traiter directement
-      final response = await HttpInterceptor.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      final response = await HttpInterceptor.get(Uri.parse(url));
       
       if (response.statusCode == 200 || response.statusCode == 201) {
         try {
@@ -139,23 +132,16 @@ class SupplierService {
       throw Exception('Le pays est requis');
     }
 
-    final token = storage.read('token');
     final supplierData = supplier.toJson();
-    final response = await http
-        .post(
-          Uri.parse('$baseUrl/fournisseurs-create'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-          body: json.encode(supplierData),
-        )
-        .timeout(
-          AppConfig.defaultTimeout,
-          onTimeout: () =>
-              throw Exception('Timeout: le serveur ne répond pas'),
-        );
+    final response = await HttpInterceptor.post(
+      HttpInterceptor.apiUri('fournisseurs-create'),
+      headers: ApiService.headers(),
+      body: json.encode(supplierData),
+    ).timeout(
+      AppConfig.defaultTimeout,
+      onTimeout: () =>
+          throw Exception('Timeout: le serveur ne répond pas'),
+    );
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = json.decode(response.body);
       return Supplier.fromJson(responseData['data'] ?? responseData);
@@ -170,22 +156,15 @@ class SupplierService {
 
   // Mettre à jour un fournisseur
   Future<Supplier> updateSupplier(Supplier supplier) async {
-    final token = storage.read('token');
-    final response = await http
-        .put(
-          Uri.parse('$baseUrl/fournisseurs-update/${supplier.id}'),
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-          body: json.encode(supplier.toJson()),
-        )
-        .timeout(
-          AppConfig.defaultTimeout,
-          onTimeout: () =>
-              throw Exception('Timeout: le serveur ne répond pas'),
-        );
+    final response = await HttpInterceptor.put(
+      HttpInterceptor.apiUri('fournisseurs-update/${supplier.id}'),
+      headers: ApiService.headers(),
+      body: json.encode(supplier.toJson()),
+    ).timeout(
+      AppConfig.defaultTimeout,
+      onTimeout: () =>
+          throw Exception('Timeout: le serveur ne répond pas'),
+    );
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
@@ -199,10 +178,8 @@ class SupplierService {
 
   // Supprimer un fournisseur (soft delete)
   Future<bool> deleteSupplier(int supplierId) async {
-    final token = storage.read('token');
     final response = await HttpInterceptor.delete(
-      Uri.parse('$baseUrl/fournisseurs-destroy/$supplierId'),
-      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      HttpInterceptor.apiUri('fournisseurs-destroy/$supplierId'),
     );
 
     return response.statusCode == 200;
@@ -210,10 +187,8 @@ class SupplierService {
 
   // Récupérer les statistiques
   Future<SupplierStats> getSupplierStats() async {
-    final token = storage.read('token');
     final response = await HttpInterceptor.get(
-      Uri.parse('$baseUrl/fournisseurs-stats'),
-      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      HttpInterceptor.apiUri('fournisseurs-stats'),
     );
 
     if (response.statusCode == 200) {
@@ -228,10 +203,10 @@ class SupplierService {
 
   // Récupérer les fournisseurs en attente
   Future<List<Supplier>> getPendingSuppliers() async {
-    final token = storage.read('token');
     final response = await HttpInterceptor.get(
-      Uri.parse('$baseUrl/fournisseurs-list?statut=pending'),
-      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      HttpInterceptor.apiUri('fournisseurs-list').replace(
+        queryParameters: {'statut': 'pending'},
+      ),
     );
 
     if (response.statusCode == 200) {
@@ -251,7 +226,6 @@ class SupplierService {
     String? validationComment,
   }) async {
     try {
-      final token = storage.read('token');
       final url = '$baseUrl/fournisseurs-validate/$supplierId';
       final body = {
         if (validationComment != null && validationComment.isNotEmpty)
@@ -266,11 +240,7 @@ class SupplierService {
 
       final response = await HttpInterceptor.post(
         Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
+        headers: ApiService.headers(),
         body: json.encode(body),
       );
 
@@ -424,7 +394,6 @@ class SupplierService {
     String? rejectionComment,
   }) async {
     try {
-      final token = storage.read('token');
       final url = '$baseUrl/fournisseurs-reject/$supplierId';
       final body = {
         'rejection_reason': rejectionReason,
@@ -434,11 +403,7 @@ class SupplierService {
 
       final response = await HttpInterceptor.post(
         Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
+        headers: ApiService.headers(),
         body: json.encode(body),
       );
 
@@ -475,14 +440,9 @@ class SupplierService {
     double rating, {
     String? comments,
   }) async {
-    final token = storage.read('token');
     final response = await HttpInterceptor.post(
-      Uri.parse('$baseUrl/fournisseurs-rate/$supplierId'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
+      HttpInterceptor.apiUri('fournisseurs-rate/$supplierId'),
+      headers: ApiService.headers(),
       body: json.encode({'rating': rating, 'comments': comments}),
     );
 
@@ -491,10 +451,8 @@ class SupplierService {
 
   // Soumettre un fournisseur
   Future<bool> submitSupplier(int supplierId) async {
-    final token = storage.read('token');
     final response = await HttpInterceptor.post(
-      Uri.parse('$baseUrl/fournisseurs-submit/$supplierId'),
-      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      HttpInterceptor.apiUri('fournisseurs-submit/$supplierId'),
     );
 
     return response.statusCode == 200;

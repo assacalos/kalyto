@@ -1,5 +1,5 @@
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
+import 'package:easyconnect/services/api_service.dart';
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/bon_commande_model.dart';
@@ -22,7 +22,6 @@ class BonCommandeService {
     String? search,
   }) async {
     try {
-      final token = storage.read('token');
       final userRole = storage.read('userRole');
       final userId = storage.read('userId');
 
@@ -34,22 +33,14 @@ class BonCommandeService {
       if (userRole == 2 && userId != null) queryParams['user_id'] = userId.toString();
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
-      final uri = Uri.parse('${AppConfig.baseUrl}/commandes-entreprise-list').replace(
+      final uri = HttpInterceptor.apiUri('commandes-entreprise-list').replace(
         queryParameters: queryParams,
       );
       AppLogger.httpRequest('GET', uri.toString(), tag: 'BON_COMMANDE_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () => http
-                .get(
-                  uri,
-                  headers: {
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer $token',
-                  },
-                )
-                .timeout(
+            () => HttpInterceptor.get(uri).timeout(
                   AppConfig.extraLongTimeout,
                   onTimeout: () =>
                       throw Exception('Timeout: le serveur ne répond pas'),
@@ -106,8 +97,8 @@ class BonCommandeService {
 
   Future<BonCommande> createBonCommande(BonCommande bonCommande) async {
     try {
-      final token = storage.read('token');
-      final url = '${AppConfig.baseUrl}/commandes-entreprise-create';
+      final uri = HttpInterceptor.apiUri('commandes-entreprise-create');
+      final url = uri.toString();
       AppLogger.httpRequest('POST', url, tag: 'BON_COMMANDE_SERVICE');
 
       // Utiliser toJsonForCreate() pour n'envoyer que les champs nécessaires
@@ -115,14 +106,9 @@ class BonCommandeService {
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () => http
-                .post(
-                  Uri.parse(url),
-                  headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer $token',
-                  },
+            () => HttpInterceptor.post(
+                  uri,
+                  headers: ApiService.headers(),
                   body: json.encode(bonCommandeJson),
                 )
                 .timeout(
@@ -232,24 +218,17 @@ class BonCommandeService {
 
   Future<BonCommande> updateBonCommande(BonCommande bonCommande) async {
     try {
-      final token = storage.read('token');
-      final response = await http
-          .put(
-            Uri.parse(
-              '${AppConfig.baseUrl}/commandes-entreprise-update/${bonCommande.id}',
-            ),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: json.encode(bonCommande.toJson()),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.put(
+        HttpInterceptor.apiUri(
+          'commandes-entreprise-update/${bonCommande.id}',
+        ),
+        headers: ApiService.headers(),
+        body: json.encode(bonCommande.toJson()),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         return BonCommande.fromJson(json.decode(response.body)['data']);

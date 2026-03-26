@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:easyconnect/providers/supplier_notifier.dart';
 import 'package:easyconnect/Models/supplier_model.dart';
 import 'package:easyconnect/Views/Components/uniform_buttons.dart';
-import 'package:easyconnect/utils/validation_helper_enhanced.dart';
+import 'package:easyconnect/utils/validation_helper.dart';
 
 final _emailRegex = RegExp(
   r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
@@ -102,7 +102,7 @@ class _SupplierFormState extends ConsumerState<SupplierForm> {
                 keyboardType: TextInputType.number,
                 maxLength: 9,
                 validator: (value) =>
-                    ValidationHelperEnhanced.validateNinea(value, required: false),
+                    ValidationHelper.validateNinea(value, required: false),
               ),
               const SizedBox(height: 16),
               TextFormField(

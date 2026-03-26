@@ -24,7 +24,7 @@ class _PushNotificationTestPageState extends State<PushNotificationTestPage> {
   String? _fcmToken;
   bool _isLoading = false;
   String _testStatus = '';
-  List<String> _testLogs = [];
+  final List<String> _testLogs = [];
 
   @override
   void initState() {

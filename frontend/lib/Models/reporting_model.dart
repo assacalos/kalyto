@@ -197,8 +197,9 @@ class ReportingModel {
     if (value is bool) return value ? 1 : 0;
     if (value is String) {
       final trimmed = value.trim();
-      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL')
+      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL') {
         return null;
+      }
       return int.tryParse(trimmed);
     }
     if (value is num) {
@@ -217,8 +218,9 @@ class ReportingModel {
     if (value is DateTime) return value;
     if (value is String) {
       final trimmed = value.trim();
-      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL')
+      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL') {
         return null;
+      }
       try {
         // Gérer le cas où la date est mal formée (ex: "22025-10-14")
         if (trimmed.startsWith('22') && trimmed.length > 10) {
@@ -635,8 +637,9 @@ class InterventionInfo {
     if (value is DateTime) return value;
     if (value is String) {
       final trimmed = value.trim();
-      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL')
+      if (trimmed.isEmpty || trimmed == 'null' || trimmed == 'NULL') {
         return null;
+      }
       try {
         return DateTime.parse(trimmed);
       } catch (e) {

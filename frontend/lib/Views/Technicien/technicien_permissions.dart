@@ -52,8 +52,6 @@ class TechnicianPermissions {
         return [USE_CHAT];
       case TechnicianSection.profile:
         return [MANAGE_SETTINGS];
-      default:
-        return [VIEW_DASHBOARD];
     }
   }
 }

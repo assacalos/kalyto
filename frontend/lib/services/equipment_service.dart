@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/equipment_model.dart';
@@ -177,32 +176,22 @@ class EquipmentService {
     String? search,
   }) async {
     try {
-      final token = storage.read('token');
-
       var queryParams = <String, String>{};
       if (status != null) queryParams['status'] = status;
       if (category != null) queryParams['category'] = category;
       if (condition != null) queryParams['condition'] = condition;
       if (search != null) queryParams['search'] = search;
 
-      final queryString =
-          queryParams.isEmpty
-              ? ''
-              : '?${Uri(queryParameters: queryParams).query}';
+      var uri = HttpInterceptor.apiUri('equipment-list');
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
 
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/equipment-list$queryString'),
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          )
-          .timeout(
-            AppConfig.extraLongTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.get(uri).timeout(
+        AppConfig.extraLongTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final decodedBody = json.decode(response.body);

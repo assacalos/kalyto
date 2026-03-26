@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:easyconnect/Models/invoice_model.dart';
 import 'package:easyconnect/Models/pagination_response.dart';
@@ -8,7 +7,6 @@ import 'package:easyconnect/utils/app_config.dart';
 import 'package:easyconnect/utils/auth_error_handler.dart';
 import 'package:easyconnect/utils/logger.dart';
 import 'package:easyconnect/utils/retry_helper.dart';
-import 'package:easyconnect/utils/cache_helper.dart';
 import 'package:easyconnect/utils/pagination_helper.dart';
 import 'package:easyconnect/services/storage_service.dart';
 import 'package:easyconnect/services/company_service.dart';
@@ -74,8 +72,7 @@ class InvoiceService {
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () => http
-                .post(
+            () => HttpInterceptor.post(
                   Uri.parse(url),
                   headers: ApiService.headers(),
                   body: jsonEncode(requestData),
@@ -428,17 +425,15 @@ class InvoiceService {
     required Map<String, dynamic> data,
   }) async {
     try {
-      final response = await http
-          .put(
-            Uri.parse('${AppConfig.baseUrl}/factures-update/$invoiceId'),
-            headers: ApiService.headers(),
-            body: jsonEncode(data),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.put(
+        Uri.parse('${AppConfig.baseUrl}/factures-update/$invoiceId'),
+        headers: ApiService.headers(),
+        body: jsonEncode(data),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         final result = ApiService.parseResponse(response);

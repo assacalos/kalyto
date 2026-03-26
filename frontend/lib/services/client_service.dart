@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
@@ -14,19 +13,10 @@ import 'package:easyconnect/utils/pagination_helper.dart';
 import 'package:easyconnect/services/storage_service.dart';
 import 'package:easyconnect/services/company_service.dart';
 
+/// Module clients : toutes les requêtes passent par [HttpInterceptor]
+/// (headers [ApiService], refresh token sur 401, même pipeline que le reste de l’app).
 class ClientService {
   final storage = GetStorage();
-
-  Map<String, String> _getHeaders(String? token, {bool isJson = false}) {
-    final headers = <String, String>{
-      'Accept': 'application/json',
-    };
-    if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    if (isJson) headers['Content-Type'] = 'application/json; charset=utf-8';
-    return headers;
-  }
 
   /// Récupérer les clients avec pagination côté serveur
   /// [timeout] : délai max (défaut 15s). Utiliser [AppConfig.extraLongTimeout] pour la génération PDF.
@@ -40,7 +30,6 @@ class ClientService {
   }) async {
     final effectiveTimeout = timeout ?? AppConfig.defaultTimeout;
     try {
-      final token = storage.read('token');
       final userRole = storage.read('userRole');
       final userId = storage.read('userId');
 
@@ -60,19 +49,14 @@ class ClientService {
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
       queryParams.addAll(CompanyService.companyQueryParam());
 
-      final uri = Uri.parse('${AppConfig.baseUrl}/clients-list').replace(
+      final uri = HttpInterceptor.apiUri('clients-list').replace(
         queryParameters: queryParams,
       );
       AppLogger.httpRequest('GET', uri.toString(), tag: 'CLIENT_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () => http
-                .get(
-                  uri,
-                  headers: _getHeaders(token as String?),
-                )
-                .timeout(
+            () => HttpInterceptor.get(uri).timeout(
                   effectiveTimeout,
                   onTimeout: () =>
                       throw Exception('Timeout: le serveur ne répond pas'),
@@ -134,11 +118,10 @@ class ClientService {
 
   Future<Client> createClient(Client client) async {
     try {
-      final token = storage.read('token');
       final userId = storage.read('userId');
-      final url = '${AppConfig.baseUrl}/clients-create';
+      final uri = HttpInterceptor.apiUri('clients-create');
 
-      AppLogger.httpRequest('POST', url, tag: 'CLIENT_SERVICE');
+      AppLogger.httpRequest('POST', uri.toString(), tag: 'CLIENT_SERVICE');
 
       var clientData = client.toJson();
       clientData['user_id'] = userId;
@@ -147,10 +130,9 @@ class ClientService {
 
       final response = await RetryHelper.retryNetwork(
         operation:
-            () => http
-                .post(
-                  Uri.parse(url),
-                  headers: _getHeaders(token as String?, isJson: true),
+            () => HttpInterceptor.post(
+                  uri,
+                  headers: ApiService.headers(),
                   body: json.encode(clientData),
                 )
                 .timeout(
@@ -161,7 +143,7 @@ class ClientService {
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
-      AppLogger.httpResponse(response.statusCode, url, tag: 'CLIENT_SERVICE');
+      AppLogger.httpResponse(response.statusCode, uri.toString(), tag: 'CLIENT_SERVICE');
       await AuthErrorHandler.handleHttpResponse(response);
 
       final result = ApiService.parseResponse(response);
@@ -197,21 +179,19 @@ class ClientService {
 
   Future<Client> updateClient(Client client) async {
     try {
-      final token = storage.read('token');
       final body = client.toJson();
       CompanyService.addCompanyIdToBody(body);
       // Backend attend POST pour clients-update (pas PUT)
-      final response = await http
-          .post(
-            Uri.parse('${AppConfig.baseUrl}/clients-update/${client.id}'),
-            headers: _getHeaders(token as String?, isJson: true),
-            body: json.encode(body),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final uri = HttpInterceptor.apiUri('clients-update/${client.id}');
+      final response = await HttpInterceptor.post(
+        uri,
+        headers: ApiService.headers(),
+        body: json.encode(body),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       final result = ApiService.parseResponse(response);
 
@@ -229,13 +209,11 @@ class ClientService {
 
   Future<bool> approveClient(int clientId) async {
     try {
-      final token = storage.read('token');
       final q = CompanyService.companyQueryParam();
-      final uri = Uri.parse('${AppConfig.baseUrl}/clients-validate/$clientId').replace(queryParameters: q.isEmpty ? null : q);
-      final response = await HttpInterceptor.post(
-        uri,
-        headers: _getHeaders(token as String?),
+      final uri = HttpInterceptor.apiUri('clients-validate/$clientId').replace(
+        queryParameters: q.isEmpty ? null : q,
       );
+      final response = await HttpInterceptor.post(uri);
 
       // Si le status code est 200 ou 201, considérer comme succès même si le body dit false
       // (le backend peut retourner success:false mais avoir validé quand même)
@@ -266,14 +244,15 @@ class ClientService {
 
   Future<bool> rejectClient(int clientId, String comment) async {
     try {
-      final token = storage.read('token');
       final bodyMap = <String, dynamic>{'commentaire': comment};
       CompanyService.addCompanyIdToBody(bodyMap);
       final q = CompanyService.companyQueryParam();
-      final uri = Uri.parse('${AppConfig.baseUrl}/clients-reject/$clientId').replace(queryParameters: q.isEmpty ? null : q);
+      final uri = HttpInterceptor.apiUri('clients-reject/$clientId').replace(
+        queryParameters: q.isEmpty ? null : q,
+      );
       final response = await HttpInterceptor.post(
         uri,
-        headers: _getHeaders(token as String?, isJson: true),
+        headers: ApiService.headers(),
         body: json.encode(bodyMap),
       );
 
@@ -294,13 +273,11 @@ class ClientService {
 
   Future<bool> deleteClient(int clientId) async {
     try {
-      final token = storage.read('token');
       final q = CompanyService.companyQueryParam();
-      final uri = Uri.parse('${AppConfig.baseUrl}/clients-delete/$clientId').replace(queryParameters: q.isEmpty ? null : q);
-      final response = await HttpInterceptor.delete(
-        uri,
-        headers: _getHeaders(token as String?),
+      final uri = HttpInterceptor.apiUri('clients-delete/$clientId').replace(
+        queryParameters: q.isEmpty ? null : q,
       );
+      final response = await HttpInterceptor.delete(uri);
 
       final result = ApiService.parseResponse(response);
       return result['success'] == true;
@@ -311,19 +288,15 @@ class ClientService {
 
   Future<Map<String, dynamic>> getClientStats() async {
     try {
-      final token = storage.read('token');
       final q = CompanyService.companyQueryParam();
-      final uri = Uri.parse('${AppConfig.baseUrl}/clients/stats').replace(queryParameters: q.isEmpty ? null : q);
-      final response = await http
-          .get(
-            uri,
-            headers: _getHeaders(token as String?),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final uri = HttpInterceptor.apiUri('clients/stats').replace(
+        queryParameters: q.isEmpty ? null : q,
+      );
+      final response = await HttpInterceptor.get(uri).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       final result = ApiService.parseResponse(response);
 

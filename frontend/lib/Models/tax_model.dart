@@ -245,7 +245,7 @@ class Tax {
       return period!;
     }
     if (periodStart != null && periodEnd != null) {
-      return '${periodStart!.substring(0, 7)}';
+      return periodStart!.substring(0, 7);
     }
     return 'N/A';
   }

@@ -1,18 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:easyconnect/Views/Patron/client_validation_page.dart';
-import 'package:easyconnect/Views/Patron/bordereau_validation_page.dart';
-import 'package:easyconnect/Views/Patron/bon_commande_validation_page.dart';
-import 'package:easyconnect/Views/Patron/devis_validation_page.dart';
-import 'package:easyconnect/Views/Patron/facture_validation_page.dart';
-import 'package:easyconnect/Views/Patron/paiement_validation_page.dart';
-import 'package:easyconnect/Views/Patron/stock_validation_page.dart';
-import 'package:easyconnect/Views/Patron/intervention_validation_page.dart';
-import 'package:easyconnect/Views/Patron/salaire_validation_page.dart';
-import 'package:easyconnect/Views/Patron/recruitment_validation_page.dart';
-import 'package:easyconnect/Views/Patron/pointage_validation_page.dart';
-import 'package:easyconnect/Views/Patron/taxe_validation_page.dart';
-import 'package:easyconnect/Views/Patron/reporting_validation_page.dart';
 
 class ValidationDashboard extends StatelessWidget {
   const ValidationDashboard({super.key});

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/intervention_model.dart';
@@ -26,7 +25,6 @@ class InterventionService {
     int perPage = 15,
   }) async {
     try {
-      final token = storage.read('token');
       final userRole = storage.read('userRole');
       final userId = storage.read('userId');
 
@@ -60,14 +58,7 @@ class InterventionService {
       AppLogger.httpRequest('GET', url, tag: 'INTERVENTION_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
-        operation:
-            () => HttpInterceptor.get(
-              Uri.parse(url),
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-              },
-            ),
+        operation: () => HttpInterceptor.get(Uri.parse(url)),
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
@@ -110,7 +101,6 @@ class InterventionService {
     String? search,
   }) async {
     try {
-      final token = storage.read('token');
       final userRole = storage.read('userRole');
       final userId = storage.read('userId');
 
@@ -125,29 +115,19 @@ class InterventionService {
         queryParams['user_id'] = userId.toString();
       }
 
-      final queryString =
-          queryParams.isEmpty
-              ? ''
-              : '?${Uri(queryParameters: queryParams).query}';
+      var uri = HttpInterceptor.apiUri('interventions-list');
+      if (queryParams.isNotEmpty) {
+        uri = uri.replace(queryParameters: queryParams);
+      }
 
-      final url = '$baseUrl/interventions-list$queryString';
-
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-          )
-          .timeout(
-            AppConfig.extraLongTimeout,
-            onTimeout: () {
-              throw Exception(
-                'Timeout: le serveur ne répond pas',
-              );
-            },
+      final response = await HttpInterceptor.get(uri).timeout(
+        AppConfig.extraLongTimeout,
+        onTimeout: () {
+          throw Exception(
+            'Timeout: le serveur ne répond pas',
           );
+        },
+      );
 
       final result = ApiService.parseResponse(response);
 
@@ -188,14 +168,8 @@ class InterventionService {
   // Récupérer une intervention par ID
   Future<Intervention> getInterventionById(int id) async {
     try {
-      final token = storage.read('token');
-
       final response = await HttpInterceptor.get(
-        Uri.parse('$baseUrl/interventions-show/$id'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        HttpInterceptor.apiUri('interventions-show/$id'),
       );
 
       final result = ApiService.parseResponse(response);
@@ -216,23 +190,15 @@ class InterventionService {
   // Créer une intervention
   Future<Intervention> createIntervention(Intervention intervention) async {
     try {
-      final token = storage.read('token');
-
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/interventions-create'),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: json.encode(intervention.toJson()),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.post(
+        HttpInterceptor.apiUri('interventions-create'),
+        headers: ApiService.headers(),
+        body: json.encode(intervention.toJson()),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
       final result = ApiService.parseResponse(response);
 
       if (result['success'] == true) {
@@ -302,23 +268,15 @@ class InterventionService {
   // Mettre à jour une intervention
   Future<Intervention> updateIntervention(Intervention intervention) async {
     try {
-      final token = storage.read('token');
-
-      final response = await http
-          .put(
-            Uri.parse('$baseUrl/interventions-update/${intervention.id}'),
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $token',
-            },
-            body: json.encode(intervention.toJson()),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      final response = await HttpInterceptor.put(
+        HttpInterceptor.apiUri('interventions-update/${intervention.id}'),
+        headers: ApiService.headers(),
+        body: json.encode(intervention.toJson()),
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       final result = ApiService.parseResponse(response);
 

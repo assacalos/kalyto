@@ -265,7 +265,7 @@ class Stock {
 
   double get totalValue => quantity * unitPrice;
 
-  String get formattedQuantity => '${quantity.toStringAsFixed(2)}';
+  String get formattedQuantity => quantity.toStringAsFixed(2);
   String get formattedUnitPrice => '${unitPrice.toStringAsFixed(2)} FCFA';
   String get formattedTotalValue => '${totalValue.toStringAsFixed(2)} FCFA';
 
@@ -306,7 +306,7 @@ class Stock {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       movements: movements ?? this.movements,
-    )..json = this.json;
+    )..json = json;
   }
 
   get user => null;

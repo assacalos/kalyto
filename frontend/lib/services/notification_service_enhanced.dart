@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:go_router/go_router.dart';
 import 'package:easyconnect/router/app_router.dart' show rootGoRouter;
 import 'package:easyconnect/Models/notification_model.dart';
 import 'package:easyconnect/utils/encoding_helper.dart';
@@ -516,22 +515,6 @@ class NotificationServiceEnhanced {
         return Colors.purple.shade700;
       default: // 'info'
         return Colors.blue.shade700;
-    }
-  }
-
-  /// Obtenir l'icône selon le type (String)
-  IconData _getNotificationIconFromString(String type) {
-    switch (type) {
-      case 'success':
-        return Icons.check_circle;
-      case 'error':
-        return Icons.error;
-      case 'warning':
-        return Icons.warning;
-      case 'task':
-        return Icons.task;
-      default: // 'info'
-        return Icons.info;
     }
   }
 

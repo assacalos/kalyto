@@ -100,9 +100,9 @@ class _AdminDashboardFullState extends ConsumerState<AdminDashboardFull> {
       floatingActionButton: currentSection == DashboardSection.users
           ? FloatingActionButton(
               onPressed: () => context.push('/admin/users/new'),
-              child: const Icon(Icons.add),
               backgroundColor: Colors.blueGrey.shade800,
               tooltip: 'Ajouter Utilisateur',
+              child: const Icon(Icons.add),
             )
           : null,
     );

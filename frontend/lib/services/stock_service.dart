@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:easyconnect/Models/stock_model.dart';
@@ -22,19 +21,12 @@ class StockService {
   // Tester la connectivité à l'API
   Future<bool> testConnection() async {
     try {
-      final token = storage.read('token');
-      final url = '${AppConfig.baseUrl}/stocks';
+      final uri = HttpInterceptor.apiUri('stocks');
+      final url = uri.toString();
       AppLogger.httpRequest('GET', url, tag: 'STOCK_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
-        operation:
-            () => HttpInterceptor.get(
-              Uri.parse(url),
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-              },
-            ),
+        operation: () => HttpInterceptor.get(uri),
         maxRetries: AppConfig.defaultMaxRetries,
       ).timeout(AppConfig.shortTimeout);
 
@@ -60,7 +52,6 @@ class StockService {
     int perPage = 15,
   }) async {
     try {
-      final token = storage.read('token');
       String url = '${AppConfig.baseUrl}/stocks';
       List<String> params = [];
 
@@ -84,14 +75,7 @@ class StockService {
       AppLogger.httpRequest('GET', url, tag: 'STOCK_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
-        operation:
-            () => HttpInterceptor.get(
-              Uri.parse(url),
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-              },
-            ),
+        operation: () => HttpInterceptor.get(Uri.parse(url)),
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
@@ -131,7 +115,6 @@ class StockService {
     int? limit,
   }) async {
     try {
-      final token = storage.read('token');
       String url = '${AppConfig.baseUrl}/stocks';
       List<String> params = [];
 
@@ -157,14 +140,7 @@ class StockService {
       AppLogger.httpRequest('GET', url, tag: 'STOCK_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
-        operation:
-            () => HttpInterceptor.get(
-              Uri.parse(url),
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer $token',
-              },
-            ),
+        operation: () => HttpInterceptor.get(Uri.parse(url)),
         maxRetries: AppConfig.defaultMaxRetries,
       );
 
@@ -298,15 +274,16 @@ class StockService {
       final stockData = stock.toJson();
 
       // Essayer d'abord la route stocks-create, puis stocks en fallback
-      String url = '${AppConfig.baseUrl}/stocks-create';
+      var uri = HttpInterceptor.apiUri('stocks-create');
+      var url = uri.toString();
       AppLogger.httpRequest('POST', url, tag: 'STOCK_SERVICE');
 
-      http.Response response;
+      var response;
       try {
         response = await RetryHelper.retryNetwork(
           operation:
               () => HttpInterceptor.post(
-                Uri.parse(url),
+                uri,
                 headers: ApiService.headers(),
                 body: jsonEncode(stockData),
               ),
@@ -315,7 +292,8 @@ class StockService {
         AppLogger.httpResponse(response.statusCode, url, tag: 'STOCK_SERVICE');
       } catch (e) {
         // Si la première route échoue, essayer la route standard
-        url = '${AppConfig.baseUrl}/stocks';
+        uri = HttpInterceptor.apiUri('stocks');
+        url = uri.toString();
         AppLogger.warning(
           'Tentative avec route alternative: $url',
           tag: 'STOCK_SERVICE',
@@ -323,7 +301,7 @@ class StockService {
         response = await RetryHelper.retryNetwork(
           operation:
               () => HttpInterceptor.post(
-                Uri.parse(url),
+                uri,
                 headers: ApiService.headers(),
                 body: jsonEncode(stockData),
               ),
@@ -363,13 +341,14 @@ class StockService {
       }
 
       final stockData = stock.toJson();
-      final url = '${AppConfig.baseUrl}/stocks-update/${stock.id}';
+      final uri = HttpInterceptor.apiUri('stocks-update/${stock.id}');
+      final url = uri.toString();
       AppLogger.httpRequest('PUT', url, tag: 'STOCK_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
         operation:
             () => HttpInterceptor.put(
-              Uri.parse(url),
+              uri,
               headers: ApiService.headers(),
               body: jsonEncode(stockData),
             ),

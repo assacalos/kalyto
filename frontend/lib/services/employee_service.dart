@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:easyconnect/services/http_interceptor.dart';
 import 'package:easyconnect/Models/employee_model.dart';
 import 'package:easyconnect/Models/pagination_response.dart';
@@ -55,9 +54,7 @@ class EmployeeService {
       AppLogger.httpRequest('GET', uri.toString(), tag: 'EMPLOYEE_SERVICE');
 
       final response = await RetryHelper.retryNetwork(
-        operation: () => http
-            .get(uri, headers: ApiService.headers())
-            .timeout(
+        operation: () => HttpInterceptor.get(uri).timeout(
               AppConfig.extraLongTimeout,
               onTimeout: () =>
                   throw Exception('Timeout: le serveur ne répond pas'),
@@ -356,11 +353,10 @@ class EmployeeService {
     String? notes,
   }) async {
     try {
-      final response = await http
-          .put(
-            Uri.parse('${AppConfig.baseUrl}/employees/$id'),
-            headers: ApiService.headers(),
-            body: jsonEncode({
+      final response = await HttpInterceptor.put(
+        HttpInterceptor.apiUri('employees/$id'),
+        headers: ApiService.headers(),
+        body: jsonEncode({
               'first_name': firstName,
               'last_name': lastName,
               'email': email,
@@ -386,12 +382,11 @@ class EmployeeService {
               'profile_picture': profilePicture,
               'notes': notes,
             }),
-          )
-          .timeout(
-            AppConfig.defaultTimeout,
-            onTimeout: () =>
-                throw Exception('Timeout: le serveur ne répond pas'),
-          );
+      ).timeout(
+        AppConfig.defaultTimeout,
+        onTimeout: () =>
+            throw Exception('Timeout: le serveur ne répond pas'),
+      );
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
