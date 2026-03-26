@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/Models/payment_model.dart';
@@ -6,6 +8,7 @@ import 'package:easyconnect/providers/auth_notifier.dart';
 import 'package:easyconnect/utils/cache_helper.dart';
 import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class PaiementValidationPage extends ConsumerStatefulWidget {
   const PaiementValidationPage({super.key});
@@ -19,17 +22,22 @@ class _PaiementValidationPageState extends ConsumerState<PaiementValidationPage>
   late TabController _tabController;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_onTabChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadPayments());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPayments();
+      _startAutoRefresh();
+    });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _searchController.dispose();
@@ -38,14 +46,31 @@ class _PaiementValidationPageState extends ConsumerState<PaiementValidationPage>
 
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
-      ref.read(paymentProvider.notifier).loadByStatus(_tabController.index);
+      ref.read(paymentProvider.notifier).loadByStatus(
+            _tabController.index,
+            forceRefresh: true,
+          );
     }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      ref
+          .read(paymentProvider.notifier)
+          .loadByStatus(_tabController.index, forceRefresh: true);
+    });
   }
 
   Future<void> _loadPayments() async {
     final user = ref.read(authProvider).user;
     if (user != null) CacheHelper.clearByPrefix('payments_');
-    ref.read(paymentProvider.notifier).loadByStatus(0, forceRefresh: true);
+    ref.read(paymentProvider.notifier).loadByStatus(
+          _tabController.index,
+          forceRefresh: true,
+        );
   }
 
   @override

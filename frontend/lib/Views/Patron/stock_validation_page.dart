@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/providers/stock_notifier.dart';
 import 'package:easyconnect/Models/stock_model.dart';
 import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class StockValidationPage extends ConsumerStatefulWidget {
   const StockValidationPage({super.key});
@@ -17,6 +20,7 @@ class _StockValidationPageState extends ConsumerState<StockValidationPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  Timer? _autoRefreshTimer;
 
   static String _statusForIndex(int index) {
     switch (index) {
@@ -39,11 +43,15 @@ class _StockValidationPageState extends ConsumerState<StockValidationPage>
         );
       }
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadStocks());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadStocks();
+      _startAutoRefresh();
+    });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -51,6 +59,15 @@ class _StockValidationPageState extends ConsumerState<StockValidationPage>
 
   Future<void> _loadStocks() async {
     await ref.read(stockProvider.notifier).loadStocks(forceRefresh: true);
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      _loadStocks();
+    });
   }
 
   @override

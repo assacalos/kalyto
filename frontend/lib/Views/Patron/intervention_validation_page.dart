@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/providers/intervention_notifier.dart';
@@ -5,6 +7,7 @@ import 'package:easyconnect/providers/intervention_state.dart';
 import 'package:easyconnect/Models/intervention_model.dart';
 import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class InterventionValidationPage extends ConsumerStatefulWidget {
   const InterventionValidationPage({super.key});
@@ -20,21 +23,25 @@ class _InterventionValidationPageState
   late TabController _tabController;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.indexIsChanging) _loadInterventions();
+      if (_tabController.indexIsChanging) return;
+      _loadInterventions();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadInterventions();
+      _startAutoRefresh();
     });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -61,6 +68,15 @@ class _InterventionValidationPageState
           statusFilter: status,
           forceRefresh: true,
         );
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      _loadInterventions();
+    });
   }
 
   @override

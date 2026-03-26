@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/providers/tax_notifier.dart';
@@ -5,6 +7,7 @@ import 'package:easyconnect/providers/tax_state.dart';
 import 'package:easyconnect/Models/tax_model.dart';
 import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class TaxeValidationPage extends ConsumerStatefulWidget {
   const TaxeValidationPage({super.key});
@@ -19,6 +22,7 @@ class _TaxeValidationPageState extends ConsumerState<TaxeValidationPage>
   late TabController _tabController;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -28,10 +32,12 @@ class _TaxeValidationPageState extends ConsumerState<TaxeValidationPage>
       _onTabChanged();
     });
     _loadTaxes();
+    _startAutoRefresh();
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -67,6 +73,15 @@ class _TaxeValidationPageState extends ConsumerState<TaxeValidationPage>
     final notifier = ref.read(taxProvider.notifier);
     notifier.filterByStatus(status);
     await notifier.loadTaxes();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      _loadTaxes();
+    });
   }
 
   @override

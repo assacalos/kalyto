@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easyconnect/providers/expense_notifier.dart';
 import 'package:easyconnect/Models/expense_model.dart';
 import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class DepenseValidationPage extends ConsumerStatefulWidget {
   const DepenseValidationPage({super.key});
@@ -17,6 +20,7 @@ class _DepenseValidationPageState extends ConsumerState<DepenseValidationPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -25,11 +29,15 @@ class _DepenseValidationPageState extends ConsumerState<DepenseValidationPage>
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) _onTabChanged();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadExpenses());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadExpenses();
+      _startAutoRefresh();
+    });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -58,6 +66,15 @@ class _DepenseValidationPageState extends ConsumerState<DepenseValidationPage>
 
   Future<void> _loadExpenses() async {
     await ref.read(expenseProvider.notifier).loadExpenses(forceRefresh: true);
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      _loadExpenses();
+    });
   }
 
   @override
