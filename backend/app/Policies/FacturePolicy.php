@@ -31,7 +31,9 @@ class FacturePolicy
             return (int) $facture->user_id === (int) $user->id;
         }
 
-        return true;
+        return $user->isAdmin()
+            || $user->isComptable()
+            || $user->isPatron();
     }
 
     /** Création : comptable, admin, patron (aligné routes role 1,3,6). */

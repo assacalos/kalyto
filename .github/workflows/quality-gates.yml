@@ -1,0 +1,59 @@
+name: Quality Gates
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+
+jobs:
+  backend-tests:
+    name: Backend PHPUnit
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, dom, xml, xmlwriter, json
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run authorization and policy tests
+        run: php vendor/bin/phpunit tests/Feature/RoleAuthorizationTest.php tests/Feature/RolePermissionMatrixTest.php tests/Unit/Policies/FacturePolicyTest.php tests/Unit/Policies/DevisPolicyTest.php
+
+  frontend-checks:
+    name: Frontend Analyze and Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
