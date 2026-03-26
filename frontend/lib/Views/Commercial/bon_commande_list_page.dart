@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import 'package:easyconnect/Views/Components/paginated_list_view.dart';
 import 'package:easyconnect/Models/bon_commande_model.dart';
 import 'package:easyconnect/utils/roles.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class BonCommandeListPage extends ConsumerStatefulWidget {
   const BonCommandeListPage({super.key});
@@ -21,6 +24,7 @@ class _BonCommandeListPageState extends ConsumerState<BonCommandeListPage>
   late TabController _tabController;
   late ScrollController _scrollController;
   bool _hasLoaded = false;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -35,11 +39,13 @@ class _BonCommandeListPageState extends ConsumerState<BonCommandeListPage>
       if (!mounted) return;
       ref.read(bonCommandeProvider.notifier).setSelectedStatus(null);
       ref.read(bonCommandeProvider.notifier).loadBonCommandes(forceRefresh: true);
+      _startAutoRefresh();
     });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _scrollController.dispose();
@@ -52,9 +58,21 @@ class _BonCommandeListPageState extends ConsumerState<BonCommandeListPage>
       ref.read(bonCommandeProvider.notifier).setSelectedStatus(index);
       ref.read(bonCommandeProvider.notifier).loadBonCommandes(
         status: index == 0 ? null : index,
-        forceRefresh: false,
+        forceRefresh: true,
       );
     }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      final status = _tabController.index == 0 ? null : _tabController.index;
+      ref.read(bonCommandeProvider.notifier).loadBonCommandes(
+        status: status,
+        forceRefresh: true,
+      );
+    });
   }
 
   @override
@@ -68,7 +86,10 @@ class _BonCommandeListPageState extends ConsumerState<BonCommandeListPage>
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => notifier.loadBonCommandes(forceRefresh: true),
+            onPressed: () => notifier.loadBonCommandes(
+              status: _tabController.index == 0 ? null : _tabController.index,
+              forceRefresh: true,
+            ),
             tooltip: 'Actualiser',
           ),
           IconButton(

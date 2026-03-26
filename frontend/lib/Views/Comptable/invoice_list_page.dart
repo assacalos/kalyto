@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
 import 'package:easyconnect/Views/Components/export_format_dialog.dart';
 import 'package:easyconnect/services/export_service.dart';
 import 'package:intl/intl.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class InvoiceListPage extends ConsumerStatefulWidget {
   const InvoiceListPage({super.key});
@@ -20,23 +23,54 @@ class _InvoiceListPageState extends ConsumerState<InvoiceListPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = '';
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) setState(() {});
+      if (_tabController.indexIsChanging) return;
+      final status = _statusFromTab(_tabController.index);
+      ref.read(invoiceProvider.notifier).filterInvoices(status: status);
+      setState(() {});
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(invoiceProvider.notifier).filterInvoices(
+        status: _statusFromTab(_tabController.index),
+      );
       ref.read(invoiceProvider.notifier).loadInvoices(forceRefresh: true);
+      _startAutoRefresh();
     });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _tabController.dispose();
     super.dispose();
+  }
+
+  String _statusFromTab(int tabIndex) {
+    switch (tabIndex) {
+      case 1:
+        return 'en_attente';
+      case 2:
+        return 'valide';
+      case 3:
+        return 'rejete';
+      default:
+        return 'all';
+    }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer =
+        Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      ref.read(invoiceProvider.notifier).loadInvoices(forceRefresh: true);
+    });
   }
 
   List<InvoiceModel> _filteredInvoices(List<InvoiceModel> invoices) {

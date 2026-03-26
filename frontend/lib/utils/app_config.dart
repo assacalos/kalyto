@@ -97,6 +97,8 @@ class AppConfig {
   /// Timeout étendu pour endpoints lents (ex. liste employés sur serveur distant)
   static const Duration extraLongTimeout = Duration(seconds: 60);
   static const Duration shortTimeout = Duration(seconds: 5);
+  // Rafraîchissement temps réel des listes par onglet/statut.
+  static const Duration realtimeListRefreshInterval = Duration(seconds: 12);
 
   // Retry
   static const int defaultMaxRetries = 3;

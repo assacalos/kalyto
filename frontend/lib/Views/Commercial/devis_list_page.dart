@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:easyconnect/Views/Components/skeleton_loaders.dart';
 import 'package:easyconnect/Views/Components/app_bar_back_button.dart';
 import 'package:easyconnect/utils/tva_rates_ci.dart';
+import 'package:easyconnect/utils/app_config.dart';
 
 class DevisListPage extends ConsumerStatefulWidget {
   final int? clientId;
@@ -21,15 +24,48 @@ class DevisListPage extends ConsumerStatefulWidget {
   ConsumerState<DevisListPage> createState() => _DevisListPageState();
 }
 
-class _DevisListPageState extends ConsumerState<DevisListPage> {
+class _DevisListPageState extends ConsumerState<DevisListPage>
+    with SingleTickerProviderStateMixin {
   final formatCurrency = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA ');
   final formatDate = DateFormat('dd/MM/yyyy');
+  late TabController _tabController;
+  Timer? _autoRefreshTimer;
+  static const List<int> _statusByTabIndex = [1, 2, 3];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(devisProvider.notifier).loadDevis(status: null, forceRefresh: true);
+      ref.read(devisProvider.notifier).loadDevis(
+        status: _statusByTabIndex[_tabController.index],
+        forceRefresh: true,
+      );
+      _startAutoRefresh();
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    final status = _statusByTabIndex[_tabController.index];
+    ref.read(devisProvider.notifier).loadDevis(status: status, forceRefresh: true);
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(AppConfig.realtimeListRefreshInterval, (_) {
+      if (!mounted) return;
+      final status = _statusByTabIndex[_tabController.index];
+      ref.read(devisProvider.notifier).loadDevis(status: status, forceRefresh: true);
     });
   }
 
@@ -38,48 +74,50 @@ class _DevisListPageState extends ConsumerState<DevisListPage> {
     final devisState = ref.watch(devisProvider);
     final notifier = ref.read(devisProvider.notifier);
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          leading: const AppBarBackButton(fallbackRoute: '/devis'),
-          title: const Text('Devis'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () => notifier.refreshData(),
-              tooltip: 'Actualiser',
+    return Scaffold(
+      appBar: AppBar(
+        leading: const AppBarBackButton(fallbackRoute: '/devis'),
+        title: const Text('Devis'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => notifier.loadDevis(
+              status: _statusByTabIndex[_tabController.index],
+              forceRefresh: true,
             ),
+            tooltip: 'Actualiser',
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: const [
+            Tab(text: 'En attente'),
+            Tab(text: 'Validés'),
+            Tab(text: 'Rejetés'),
           ],
-          bottom: const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'En attente'),
-              Tab(text: 'Validés'),
-              Tab(text: 'Rejetés'),
+        ),
+      ),
+      body: Stack(
+        children: [
+          TabBarView(
+            controller: _tabController,
+            children: [
+              _buildDevisList(context, 1, devisState, notifier),
+              _buildDevisList(context, 2, devisState, notifier),
+              _buildDevisList(context, 3, devisState, notifier),
             ],
           ),
-        ),
-        body: Stack(
-          children: [
-            TabBarView(
-              children: [
-                _buildDevisList(context, 1, devisState, notifier),
-                _buildDevisList(context, 2, devisState, notifier),
-                _buildDevisList(context, 3, devisState, notifier),
-              ],
+          Positioned(
+            bottom: 80,
+            right: 16,
+            child: UniformAddButton(
+              onPressed: () => context.go('/devis/new'),
+              label: 'Nouveau Devis',
+              icon: Icons.description,
             ),
-            Positioned(
-              bottom: 80,
-              right: 16,
-              child: UniformAddButton(
-                onPressed: () => context.go('/devis/new'),
-                label: 'Nouveau Devis',
-                icon: Icons.description,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
